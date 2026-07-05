@@ -29,10 +29,23 @@ Requires **Node 18+**.
 
 ## What's inside
 
-| Route | File | Description |
+**40+ real routes** — a SaaS landing plus a full admin suite, all wired with
+`react-router-dom` and sharing one token system.
+
+| Area | Routes | Highlights |
 | --- | --- | --- |
-| `/` | `src/pages/Landing.jsx` | SaaS marketing page: hero, logos, bento features, pricing, CTA |
-| `/app` | `src/pages/Dashboard.jsx` | Analytics dashboard: KPIs, area/donut/bar charts, activity, table |
+| Landing | `/` | Hero, logos, bento features, pricing, CTA |
+| Dashboards | `/app`, `/app/ecommerce`, `/app/analytics` | KPIs + themed ApexCharts (area/donut/bar/line) |
+| Management | `/app/users`, `/app/orders`, `/app/products` | Search + sort + pagination, status/category filters |
+| eCommerce | `/app/storefront`, `/app/product-detail`, `/app/order-detail`, `/app/checkout` | Storefront, product, order timeline, checkout |
+| CRM | `/app/leads`, `/app/pipeline`, `/app/contact`, `/app/deal` | Lead scoring, deal pipeline, contact & deal detail |
+| Project / HR / Help Desk | `/app/projects`, `/app/project-detail`, `/app/hr`, `/app/employees`, `/app/tickets`, `/app/ticket-detail` | Boards, headcount, ticket threads |
+| Verticals | `/app/lms`, `/app/course`, `/app/finance`, `/app/healthcare`, `/app/ai` | Learning, finance, clinic, AI assistant |
+| Apps | `/app/chat`, `/app/email`, `/app/calendar`, `/app/kanban`, `/app/todo`, `/app/files` | Live conversation/mail switching, todo toggles |
+| Pages | `/app/invoice`, `/app/profile`, `/app/pricing`, `/app/settings` | Invoice, profile, pricing toggle, settings sub-tabs |
+| Forms & UI | `/app/form-elements`, `/app/form-wizard`, `/app/ui`, `/app/charts` | Multi-step wizard, accordion + modal, 6-chart gallery |
+| Auth | `/login`, `/register`, `/forgot`, `/lock`, `/login-boxed`, `/otp`, `/two-factor` | Split & boxed shells, OTP, 2FA |
+| Errors | `/404`, `/500`, `/maintenance`, `/coming-soon` | Full-screen states |
 
 ```
 nexus-react/
@@ -41,20 +54,24 @@ nexus-react/
 ├─ package.json
 └─ src/
    ├─ main.jsx                 App entry (Router + ThemeProvider)
-   ├─ App.jsx                  Routes + global ThemeControl
+   ├─ App.jsx                  All routes + global ThemeControl
    ├─ styles/global.css        ★ all design tokens live here
    ├─ theme/
    │  └─ ThemeProvider.jsx     light/dark + accent context (localStorage)
    ├─ components/
    │  ├─ Icon.jsx              inline-SVG icon set
    │  └─ ThemeControl.jsx      floating theme switcher
+   ├─ admin/
+   │  ├─ ui.jsx                shared primitives (Card, Chip, Avatar, KPI…)
+   │  ├─ Chart.jsx             theme-aware ApexCharts wrapper
+   │  └─ nav.js                sidebar navigation (13 groups)
    ├─ layouts/
    │  └─ DashboardLayout.jsx   sidebar + topbar shell
    ├─ pages/
    │  ├─ Landing.jsx
-   │  └─ Dashboard.jsx
+   │  └─ admin/                one file per admin section
    └─ data/
-      └─ dashboard.js          demo data — swap for your API
+      └─ adminData.js          admin demo data — swap for your API
 ```
 
 ---
