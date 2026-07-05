@@ -179,7 +179,7 @@ export default function Landing() {
           color: 'var(--tx-3)',
         }}
       >
-        You're viewing the <strong style={{ color: 'var(--tx-1)' }}>React (Vite)</strong> edition · also available as an{' '}
+        You're viewing the <strong style={{ color: 'var(--tx-1)' }}>React (Vite)</strong> edition · your purchase also includes the{' '}
         <a
           href="https://nexus-ui-kit.pages.dev/"
           style={{ color: 'var(--a2)', fontWeight: 600, textDecoration: 'none' }}
