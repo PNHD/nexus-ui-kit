@@ -1,0 +1,205 @@
+/* ============================================================
+   Nexus UI Kit — global tokens & resets
+   The entire palette lives here. Change these variables and
+   every screen rebrands at once. Theme + accent are switched
+   via [data-theme] / [data-accent] on <html> (see ThemeProvider).
+   ============================================================ */
+
+:root,
+[data-accent='violet'] {
+  --a1: #7c5cff;
+  --a2: #a48bff;
+  --a3: #22d3ee;
+  --a1rgb: 124, 92, 255;
+  --a3rgb: 34, 211, 238;
+}
+[data-accent='emerald'] {
+  --a1: #10b981;
+  --a2: #34d399;
+  --a3: #2dd4bf;
+  --a1rgb: 16, 185, 129;
+  --a3rgb: 45, 212, 191;
+}
+[data-accent='orange'] {
+  --a1: #f97316;
+  --a2: #fb923c;
+  --a3: #f59e0b;
+  --a1rgb: 249, 115, 22;
+  --a3rgb: 245, 158, 11;
+}
+
+/* ---- dark (default) ---- */
+[data-theme='dark'] {
+  --fg: 255, 255, 255;
+  --bg-rgb: 10, 10, 16;
+  --bg: #0a0a10;
+  --bg-elev: #0d0d14;
+  --bg-deep: #08080c;
+  --tx-0: #f0f0f5;
+  --tx-1: #e9e9ef;
+  --tx-2: #c4c4d2;
+  --tx-3: #9a9aab;
+  --tx-4: #8b8b9c;
+  --tx-5: #6f6f80;
+}
+
+/* ---- light ---- */
+[data-theme='light'] {
+  --fg: 22, 24, 38;
+  --bg-rgb: 238, 240, 244;
+  --bg: #eef0f4;
+  --bg-elev: #ffffff;
+  --bg-deep: #e3e6ec;
+  --tx-0: #14151c;
+  --tx-1: #1f2029;
+  --tx-2: #3a3b46;
+  --tx-3: #565762;
+  --tx-4: #6b6c77;
+  --tx-5: #8a8b95;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--tx-1);
+  font-family: 'Sora', sans-serif;
+  transition: background 0.3s, color 0.3s;
+}
+
+a {
+  color: inherit;
+}
+
+input,
+textarea,
+select,
+button {
+  font-family: 'Sora', sans-serif;
+}
+input::placeholder,
+textarea::placeholder {
+  color: var(--tx-5);
+}
+
+::selection {
+  background: rgba(var(--a1rgb), 0.35);
+  color: #fff;
+}
+
+::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(var(--fg), 0.12);
+  border-radius: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ---- shared interaction helpers ---- */
+.nx-nav:hover {
+  background: rgba(var(--fg), 0.05) !important;
+  color: var(--tx-0) !important;
+}
+.nx-themebtn {
+  transition: background 0.2s, border-color 0.2s, transform 0.15s;
+}
+.nx-themebtn:hover {
+  transform: translateY(-1px);
+}
+.nx-card {
+  transition: transform 0.3s cubic-bezier(0.2, 0.7, 0.2, 1), border-color 0.3s,
+    box-shadow 0.3s;
+}
+.nx-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(var(--a1rgb), 0.35);
+}
+.nx-row:hover {
+  background: rgba(var(--fg), 0.03) !important;
+}
+.nx-link {
+  transition: color 0.2s;
+}
+.nx-link:hover {
+  color: var(--tx-0);
+}
+
+@keyframes nx-pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@keyframes nx-float {
+  0%,
+  100% {
+    transform: translateX(-50%) translateY(0);
+  }
+  50% {
+    transform: translateX(-50%) translateY(-18px);
+  }
+}
+@keyframes nx-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* ---- responsive ---- */
+@media (max-width: 1024px) {
+  .nx-sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .nx-sidebar.open {
+    transform: translateX(0);
+  }
+  .nx-content {
+    margin-left: 0 !important;
+  }
+  .nx-menubtn {
+    display: flex !important;
+  }
+}
+@media (max-width: 900px) {
+  .nx-bento {
+    grid-template-columns: 1fr !important;
+  }
+  .nx-bento > * {
+    grid-column: auto !important;
+  }
+  .nx-desknav {
+    display: none !important;
+  }
+  .nx-mobtog {
+    display: flex !important;
+  }
+}
+@media (max-width: 720px) {
+  .nx-kpigrid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+  .nx-2col,
+  .nx-3col {
+    grid-template-columns: 1fr !important;
+  }
+  .nx-hidesm,
+  .nx-topsearch {
+    display: none !important;
+  }
+}
