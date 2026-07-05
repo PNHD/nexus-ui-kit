@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Sora:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  #nx-root {
+    --a1:#7c5cff; --a2:#a48bff; --a3:#22d3ee; --a1rgb:124,92,255; --a3rgb:34,211,238;
+    --fg:255,255,255; --bg-rgb:8,8,12;
+    --bg:#08080c; --bg-2:#0d0d14;
+    --tx-hi:#f4f4f7; --tx-0:#f0f0f5; --tx-2:#c4c4d2; --tx-3:#9a9aab; --tx-4:#8b8b9c; --tx-5:#6f6f80;
+  }
+  #nx-root[data-accent='emerald']{ --a1:#10b981; --a2:#34d399; --a3:#2dd4bf; --a1rgb:16,185,129; --a3rgb:45,212,191; }
+  #nx-root[data-accent='orange']{ --a1:#f97316; --a2:#fb923c; --a3:#f59e0b; --a1rgb:249,115,22; --a3rgb:245,158,11; }
+  #nx-root[data-theme='light']{
+    --fg:22,24,38; --bg-rgb:244,245,248;
+    --bg:#f4f5f8; --bg-2:#ffffff;
+    --tx-hi:#14151c; --tx-0:#1a1b22; --tx-2:#3a3b46; --tx-3:#565762; --tx-4:#6b6c77; --tx-5:#8a8b95;
+  }
+  html { scroll-behavior: smooth; }
+  body { background: #08080c; }
+  body:has(#nx-root[data-theme='light']) { background: #f4f5f8; }
+  ::selection { background: rgba(var(--a1rgb),0.35); color: #fff; }
+  ::-webkit-scrollbar { width: 9px; height: 9px; }
+  ::-webkit-scrollbar-thumb { background: rgba(var(--fg),0.14); border-radius: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  .nx-toc:hover { color: var(--tx-0) !important; background: rgba(var(--fg),0.04) !important; }
+  .nx-themebtn { transition: background .2s, border-color .2s, transform .15s; }
+  .nx-themebtn:hover { transform: translateY(-1px); }
+  .nx-card { transition: transform .3s cubic-bezier(.2,.7,.2,1), border-color .3s; }
+  .nx-doclink:hover { border-color: rgba(var(--a1rgb),0.5) !important; transform: translateY(-3px); }
+  @media (max-width: 1000px) {
+    .nx-sidebar { transform: translateX(-100%); transition: transform .3s cubic-bezier(.2,.7,.2,1); box-shadow: 0 0 60px rgba(0,0,0,0.5); }
+    .nx-sidebar.open { transform: translateX(0); }
+    .nx-content { margin-left: 0 !important; }
+    .nx-menubtn { display: flex !important; }
+    .nx-3col { grid-template-columns: 1fr 1fr !important; }
+  }
+  @media (max-width: 640px) {
+    .nx-3col, .nx-2col { grid-template-columns: 1fr !important; }
+  }
+</style>
+</helmet>
+
+<div id="nx-root" data-theme="{{ theme }}" data-accent="{{ accent }}" style="background:var(--bg);color:var(--tx-hi);font-family:'Sora',sans-serif;min-height:100vh;position:relative;transition:background .3s,color .3s;">
+
+  <!-- backdrop glow -->
+  <div style="position:fixed;top:-280px;right:-160px;width:720px;height:620px;background:radial-gradient(circle,rgba(var(--a1rgb),0.16),transparent 62%);filter:blur(30px);pointer-events:none;z-index:0;"></div>
+
+  <!-- ===== THEME CONTROL BAR ===== -->
+  <div style="position:fixed;bottom:20px;right:20px;z-index:95;display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:100px;background:rgba(var(--bg-rgb),0.82);backdrop-filter:blur(14px);border:1px solid rgba(var(--fg),0.12);box-shadow:0 12px 34px rgba(0,0,0,0.35);">
+    <button onClick="{{ toggleTheme }}" class="nx-themebtn" title="Toggle light / dark" style="display:flex;align-items:center;gap:7px;background:rgba(var(--fg),0.06);border:1px solid rgba(var(--fg),0.12);color:var(--tx-hi);border-radius:100px;padding:7px 13px;cursor:pointer;font-family:'Sora',sans-serif;font-size:12.5px;font-weight:600;">
+      <span data-html="{{ themeIcon }}" style="display:flex;"></span>{{ themeLabel }}
+    </button>
+    <span style="width:1px;height:20px;background:rgba(var(--fg),0.14);"></span>
+    <div style="display:flex;align-items:center;gap:7px;">
+      <sc-for list="{{ accentSwatches }}" as="sw" hint-placeholder-count="3">
+        <button onClick="{{ sw.pick }}" title="{{ sw.name }}" class="nx-themebtn" style="width:22px;height:22px;border-radius:50%;cursor:pointer;background:{{ sw.grad }};border:2px solid {{ sw.ring }};"></button>
+      </sc-for>
+    </div>
+  </div>
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="nx-sidebar {{ sidebarClass }}" style="position:fixed;top:0;left:0;bottom:0;width:280px;background:var(--bg-2);border-right:1px solid rgba(var(--fg),0.07);z-index:70;display:flex;flex-direction:column;">
+    <div style="padding:20px 22px 16px;border-bottom:1px solid rgba(var(--fg),0.06);display:flex;align-items:center;justify-content:space-between;gap:10px;">
+      <a href="Nexus Theme Showcase.dc.html" style="display:flex;align-items:center;gap:11px;text-decoration:none;color:var(--tx-hi);">
+        <span style="width:33px;height:33px;border-radius:9px;background:linear-gradient(135deg,var(--a1),var(--a3));display:flex;align-items:center;justify-content:center;font-weight:700;font-family:'Space Grotesk';color:#0a0a12;box-shadow:0 6px 20px rgba(var(--a1rgb),0.45);">N</span>
+        <span style="font-family:'Space Grotesk';font-weight:600;font-size:16px;letter-spacing:-0.02em;">Nexus <span style="color:var(--tx-4);font-weight:500;">Docs</span></span>
+      </a>
+      <button onClick="{{ closeSidebar }}" class="nx-menubtn" style="display:none;background:none;border:none;color:var(--tx-3);cursor:pointer;padding:4px;" data-html="{{ closeIcon }}"></button>
+    </div>
+
+    <nav style="flex:1;overflow-y:auto;padding:16px 14px 30px;">
+      <sc-for list="{{ tocGroups }}" as="g" hint-placeholder-count="5">
+        <div style="margin-bottom:20px;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:0.14em;color:var(--tx-5);text-transform:uppercase;padding:0 10px;margin-bottom:8px;">{{ g.title }}</div>
+          <sc-for list="{{ g.items }}" as="t" hint-placeholder-count="4">
+            <a href="{{ t.href }}" onClick="{{ t.click }}" class="nx-toc" style="display:flex;align-items:center;gap:9px;text-decoration:none;padding:8px 10px;border-radius:9px;font-size:13.5px;font-weight:500;color:{{ t.color }};background:{{ t.bg }};transition:background .2s,color .2s;">
+              <span style="width:6px;height:6px;border-radius:50%;background:{{ t.dot }};flex-shrink:0;"></span>{{ t.label }}
+            </a>
+          </sc-for>
+        </div>
+      </sc-for>
+    </nav>
+
+    <div style="padding:14px 18px;border-top:1px solid rgba(var(--fg),0.06);display:flex;flex-direction:column;gap:8px;">
+      <a href="Nexus Components Gallery.dc.html" target="_blank" style="display:flex;align-items:center;justify-content:space-between;text-decoration:none;color:var(--tx-3);font-size:13px;font-weight:500;padding:8px 10px;border-radius:9px;border:1px solid rgba(var(--fg),0.08);">Component gallery <span data-html="{{ arrowIcon }}" style="display:flex;"></span></a>
+    </div>
+  </aside>
+
+  <!-- ===== CONTENT ===== -->
+  <div class="nx-content" style="margin-left:280px;position:relative;z-index:1;">
+
+    <!-- mobile top bar -->
+    <div style="position:sticky;top:0;z-index:60;backdrop-filter:blur(14px);background:rgba(var(--bg-rgb),0.7);border-bottom:1px solid rgba(var(--fg),0.06);padding:12px 24px;display:flex;align-items:center;gap:14px;">
+      <button onClick="{{ openSidebar }}" class="nx-menubtn" style="display:none;align-items:center;justify-content:center;width:38px;height:38px;border-radius:10px;background:rgba(var(--fg),0.06);border:1px solid rgba(var(--fg),0.12);color:var(--tx-hi);cursor:pointer;" data-html="{{ menuIcon }}"></button>
+      <div style="flex:1;display:flex;align-items:center;gap:9px;font-size:13px;color:var(--tx-4);">
+        <span style="font-family:'JetBrains Mono';">v1.0.0</span>
+        <span style="color:var(--tx-5);">·</span>
+        <span>Documentation</span>
+      </div>
+      <a href="Nexus Theme Showcase.dc.html#buy" style="text-decoration:none;font-size:13px;font-weight:600;color:#0a0a12;background:linear-gradient(135deg,var(--a2),var(--a3));padding:8px 16px;border-radius:9px;">Buy now</a>
+    </div>
+
+    <div style="max-width:820px;margin:0 auto;padding:48px 40px 120px;">
+
+      <!-- HERO -->
+      <div style="margin-bottom:12px;">
+        <div style="display:inline-flex;align-items:center;gap:9px;padding:6px 14px;border-radius:100px;border:1px solid rgba(var(--fg),0.12);background:rgba(var(--fg),0.04);font-size:12px;color:var(--tx-2);margin-bottom:20px;">
+          <span style="width:7px;height:7px;border-radius:50%;background:var(--a3);box-shadow:0 0 10px var(--a3);"></span>
+          Documentation · Nexus UI Kit v1.0.0
+        </div>
+        <h1 style="font-family:'Space Grotesk';font-weight:700;font-size:clamp(34px,5vw,52px);line-height:1.05;letter-spacing:-0.035em;margin-bottom:16px;">Everything you need to<br><span style="background:linear-gradient(120deg,var(--a2),var(--a3));-webkit-background-clip:text;background-clip:text;color:transparent;">ship with Nexus.</span></h1>
+        <p style="font-size:17px;line-height:1.65;color:var(--tx-3);max-width:600px;">A friendly, no-nonsense guide. Nexus is plain HTML &amp; CSS with a sprinkle of vanilla JS — no build step, no framework lock-in. Read top to bottom in ten minutes, or jump to a section.</p>
+      </div>
+
+      <!-- quick links -->
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:36px 0 8px;" class="nx-3col">
+        <sc-for list="{{ quickLinks }}" as="q" hint-placeholder-count="3">
+          <a href="{{ q.href }}" onClick="{{ q.click }}" class="nx-doclink" style="display:flex;flex-direction:column;gap:10px;text-decoration:none;padding:20px;border-radius:16px;border:1px solid rgba(var(--fg),0.1);background:rgba(var(--fg),0.025);transition:transform .3s,border-color .3s;">
+            <span style="width:40px;height:40px;border-radius:11px;background:rgba(var(--a1rgb),0.14);display:flex;align-items:center;justify-content:center;color:var(--a2);" data-html="{{ q.icon }}"></span>
+            <span style="font-family:'Space Grotesk';font-size:15px;font-weight:600;color:var(--tx-hi);">{{ q.title }}</span>
+            <span style="font-size:13px;line-height:1.5;color:var(--tx-4);">{{ q.desc }}</span>
+          </a>
+        </sc-for>
+      </div>
+
+      <!-- DOC SECTIONS -->
+      <sc-for list="{{ sections }}" as="sec" hint-placeholder-count="8">
+        <section id="{{ sec.id }}" style="scroll-margin-top:84px;padding-top:52px;">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+            <span style="font-size:12px;font-weight:700;letter-spacing:0.14em;color:var(--a2);text-transform:uppercase;">{{ sec.kicker }}</span>
+          </div>
+          <h2 style="font-family:'Space Grotesk';font-weight:700;font-size:clamp(24px,3.4vw,34px);letter-spacing:-0.03em;margin-bottom:14px;line-height:1.15;">{{ sec.title }}</h2>
+
+          <!-- blocks -->
+          <sc-for list="{{ sec.blocks }}" as="b" hint-placeholder-count="3">
+            <div style="margin-bottom:{{ b.gap }};">
+
+              <sc-if value="{{ b.isText }}" hint-placeholder-val="{{ false }}">
+                <p data-html="{{ b.html }}" style="font-size:15.5px;line-height:1.75;color:var(--tx-3);"></p>
+              </sc-if>
+
+              <sc-if value="{{ b.isCode }}" hint-placeholder-val="{{ false }}">
+                <div style="border-radius:14px;overflow:hidden;border:1px solid rgba(var(--fg),0.1);background:var(--bg-2);">
+                  <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 15px;border-bottom:1px solid rgba(var(--fg),0.08);background:rgba(var(--fg),0.03);">
+                    <span style="font-family:'JetBrains Mono';font-size:12px;font-weight:600;color:var(--tx-4);">{{ b.lang }}</span>
+                    <button onClick="{{ b.copy }}" class="nx-themebtn" style="display:flex;align-items:center;gap:6px;background:rgba(var(--fg),0.06);border:1px solid rgba(var(--fg),0.14);color:var(--tx-3);border-radius:8px;padding:5px 11px;cursor:pointer;font-family:'Sora',sans-serif;font-size:11.5px;font-weight:600;">{{ b.copyState }}</button>
+                  </div>
+                  <pre style="margin:0;padding:16px 18px;overflow-x:auto;"><code style="font-family:'JetBrains Mono';font-size:12.5px;line-height:1.75;color:var(--tx-2);white-space:pre;">{{ b.code }}</code></pre>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ b.isNote }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;gap:13px;padding:16px 18px;border-radius:14px;border:1px solid {{ b.noteBorder }};background:{{ b.noteBg }};">
+                  <span style="flex-shrink:0;color:{{ b.noteColor }};margin-top:1px;" data-html="{{ b.noteIcon }}"></span>
+                  <div data-html="{{ b.html }}" style="font-size:14px;line-height:1.65;color:var(--tx-2);"></div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ b.isTable }}" hint-placeholder-val="{{ false }}">
+                <div style="border-radius:14px;overflow:hidden;border:1px solid rgba(var(--fg),0.1);">
+                  <sc-for list="{{ b.rows }}" as="r" hint-placeholder-count="4">
+                    <div style="display:grid;grid-template-columns:1fr 1.6fr;gap:16px;padding:13px 18px;border-bottom:1px solid rgba(var(--fg),0.06);background:{{ r.bg }};">
+                      <span style="font-family:'JetBrains Mono';font-size:12.5px;color:{{ r.keyColor }};font-weight:{{ r.weight }};">{{ r.k }}</span>
+                      <span style="font-size:13.5px;color:var(--tx-3);line-height:1.5;">{{ r.v }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ b.isTree }}" hint-placeholder-val="{{ false }}">
+                <div style="border-radius:14px;border:1px solid rgba(var(--fg),0.1);background:var(--bg-2);padding:18px 20px;overflow-x:auto;">
+                  <pre style="margin:0;font-family:'JetBrains Mono';font-size:12.5px;line-height:1.85;color:var(--tx-3);white-space:pre;" data-html="{{ b.html }}"></pre>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ b.isList }}" hint-placeholder-val="{{ false }}">
+                <ul style="list-style:none;display:flex;flex-direction:column;gap:11px;">
+                  <sc-for list="{{ b.items }}" as="li" hint-placeholder-count="4">
+                    <li style="display:flex;gap:12px;font-size:15px;line-height:1.6;color:var(--tx-3);">
+                      <span style="flex-shrink:0;width:22px;height:22px;border-radius:7px;background:rgba(var(--a1rgb),0.14);color:var(--a2);display:flex;align-items:center;justify-content:center;margin-top:1px;" data-html="{{ checkIcon }}"></span>
+                      <span data-html="{{ li }}"></span>
+                    </li>
+                  </sc-for>
+                </ul>
+              </sc-if>
+
+              <sc-if value="{{ b.isFaq }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column;gap:10px;">
+                  <sc-for list="{{ b.items }}" as="fq" hint-placeholder-count="4">
+                    <div style="border-radius:14px;border:1px solid rgba(var(--fg),0.09);background:rgba(var(--fg),0.02);padding:18px 20px;">
+                      <div style="font-family:'Space Grotesk';font-size:15px;font-weight:600;color:var(--tx-hi);margin-bottom:7px;">{{ fq.q }}</div>
+                      <div data-html="{{ fq.a }}" style="font-size:14px;line-height:1.65;color:var(--tx-3);"></div>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+
+            </div>
+          </sc-for>
+        </section>
+      </sc-for>
+
+      <!-- SUPPORT CTA -->
+      <section id="support" style="scroll-margin-top:84px;margin-top:72px;">
+        <div style="position:relative;overflow:hidden;border-radius:22px;border:1px solid rgba(var(--fg),0.1);background:linear-gradient(150deg,rgba(var(--a1rgb),0.16),rgba(var(--a3rgb),0.07));padding:44px 36px;text-align:center;">
+          <div style="position:absolute;top:-100px;left:50%;transform:translateX(-50%);width:460px;height:320px;background:radial-gradient(circle,rgba(var(--a1rgb),0.3),transparent 65%);filter:blur(30px);pointer-events:none;"></div>
+          <div style="position:relative;">
+            <h2 style="font-family:'Space Grotesk';font-weight:700;font-size:clamp(24px,3.6vw,36px);letter-spacing:-0.03em;margin-bottom:12px;">Still stuck? We've got you.</h2>
+            <p style="font-size:16px;line-height:1.6;color:var(--tx-2);max-width:460px;margin:0 auto 26px;">Every purchase includes 6 months of author support. We usually reply within one business day.</p>
+            <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+              <a href="Nexus Theme Showcase.dc.html" style="text-decoration:none;font-size:14.5px;font-weight:600;color:#0a0a12;background:linear-gradient(135deg,var(--a2),var(--a3));padding:13px 26px;border-radius:11px;box-shadow:0 12px 30px rgba(var(--a1rgb),0.4);">Back to showcase</a>
+              <a href="mailto:support@nexus-ui.kit" style="text-decoration:none;font-size:14.5px;font-weight:600;color:var(--tx-hi);background:rgba(var(--fg),0.06);border:1px solid rgba(var(--fg),0.16);padding:13px 26px;border-radius:11px;">Email support</a>
+            </div>
+          </div>
+        </div>
+        <div style="text-align:center;margin-top:34px;font-size:13px;color:var(--tx-5);">Nexus UI Kit · Documentation · v1.0.0</div>
+      </section>
+
+    </div>
+  </div>
+
+  <!-- sidebar scrim (mobile) -->
+  <sc-if value="{{ sidebarOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeSidebar }}" style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:65;backdrop-filter:blur(2px);"></div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1180,&quot;height&quot;:900}}">
+class Component extends DCLogic {
+  _readPref(key, fallback) { try { return localStorage.getItem(key) || fallback; } catch(e){ return fallback; } }
+  theme = this._readPref('nx-theme', 'dark');
+  accent = this._readPref('nx-accent', 'violet');
+  state = { active: 'overview', sidebarOpen: false, copied: '' };
+
+  toggleTheme = () => { this.theme = this.theme === 'dark' ? 'light' : 'dark'; try { localStorage.setItem('nx-theme', this.theme); } catch(e){} this.forceUpdate(); };
+  setAccent = (a) => () => { this.accent = a; try { localStorage.setItem('nx-accent', a); } catch(e){} this.forceUpdate(); };
+
+  openSidebar = () => this.setState({ sidebarOpen: true });
+  closeSidebar = () => this.setState({ sidebarOpen: false });
+
+  goTo = (id) => (e) => {
+    if (e) e.preventDefault();
+    this.setState({ active: id, sidebarOpen: false });
+    const el = document.getElementById(id);
+    if (el) { const y = el.getBoundingClientRect().top + window.scrollY - 74; window.scrollTo({ top: y, behavior: 'smooth' }); }
+  };
+
+  copyCode = (id, code) => () => {
+    try { navigator.clipboard.writeText(code); } catch(e){}
+    this.setState({ copied: id });
+    clearTimeout(this._ct); this._ct = setTimeout(() => this.setState({ copied: '' }), 1600);
+  };
+
+  componentDidMount() {
+    this._initHtmlObserver(); this._applyHtml(); this._initSpy();
+  }
+  componentDidUpdate() { this._applyHtml(); }
+  componentWillUnmount() {
+    try { this._htmlObs && this._htmlObs.disconnect(); } catch(e){}
+    try { this._spy && this._spy.disconnect(); } catch(e){}
+  }
+
+  _initSpy() {
+    try {
+      const ids = ['overview','included','structure','quickstart','theming','customize','components','charts','responsive','browsers','faq','changelog'];
+      this._spy = new IntersectionObserver((entries) => {
+        entries.forEach(en => { if (en.isIntersecting) this.setState({ active: en.target.id }); });
+      }, { rootMargin: '-74px 0px -70% 0px', threshold: 0 });
+      ids.forEach(id => { const el = document.getElementById(id); if (el) this._spy.observe(el); });
+    } catch(e){}
+  }
+
+  _applyHtml() {
+    try { document.querySelectorAll('[data-html]').forEach(el => { const v = el.getAttribute('data-html') || ''; if (v && (el.__lastHtml !== v || el.childNodes.length === 0)) { el.innerHTML = v; el.__lastHtml = v; } }); } catch(e){}
+  }
+  _initHtmlObserver() {
+    try {
+      this._htmlObs = new MutationObserver(() => { clearTimeout(this._htmlT); this._htmlT = setTimeout(() => this._applyHtml(), 0); });
+      this._htmlObs.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['data-html'] });
+    } catch(e){}
+  }
+
+  ic(p, sz) { return '<svg width="' + (sz||20) + '" height="' + (sz||20) + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + p + '</svg>'; }
+
+  renderVals() {
+    const sun = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
+    const moon = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>';
+    const checkIcon = this.ic('<path d="M20 6L9 17l-5-5"/>', 13);
+
+    const accentDefs = [
+      { key: 'violet', grad: 'linear-gradient(135deg,#a48bff,#22d3ee)', name: 'Violet' },
+      { key: 'emerald', grad: 'linear-gradient(135deg,#34d399,#2dd4bf)', name: 'Emerald' },
+      { key: 'orange', grad: 'linear-gradient(135deg,#fb923c,#f59e0b)', name: 'Orange' },
+    ];
+    const accentSwatches = accentDefs.map(a => ({ name: a.name, grad: a.grad, pick: this.setAccent(a.key), ring: this.accent === a.key ? 'var(--tx-hi)' : 'transparent' }));
+
+    const tocGroups = [
+      { title: 'Getting started', keys: [['overview','Overview'],['included','What\u2019s included'],['structure','File structure'],['quickstart','Quick start']] },
+      { title: 'Theming', keys: [['theming','Light / dark & accents'],['customize','Customization']] },
+      { title: 'Building', keys: [['components','Using components'],['charts','Charts'],['responsive','Responsive design'],['browsers','Browser support']] },
+      { title: 'Reference', keys: [['faq','FAQ'],['changelog','Changelog']] },
+    ].map(g => ({ title: g.title, items: g.keys.map(([id, label]) => {
+      const on = this.state.active === id;
+      return { label, href: '#' + id, click: this.goTo(id),
+        color: on ? 'var(--tx-hi)' : 'var(--tx-4)',
+        bg: on ? 'rgba(var(--a1rgb),0.12)' : 'transparent',
+        dot: on ? 'var(--a2)' : 'rgba(var(--fg),0.22)' };
+    }) }));
+
+    const quickLinks = [
+      { title: 'Quick start', desc: 'From zip to running in under a minute.', href: '#quickstart', click: this.goTo('quickstart'), icon: this.ic('<path d="M13 2L3 14h7l-1 8 10-12h-7z"/>', 20) },
+      { title: 'Theming', desc: 'Light, dark & three accent skins.', href: '#theming', click: this.goTo('theming'), icon: this.ic('<circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>', 20) },
+      { title: 'Components', desc: '40+ ready-made building blocks.', href: '#components', click: this.goTo('components'), icon: this.ic('<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>', 20) },
+    ];
+
+    // ---- block helpers ----
+    let cid = 0;
+    const text = (html, gap) => ({ isText: true, html, gap: gap || '18px' });
+    const code = (lang, codeStr, gap) => { const id = 'c' + (cid++); return { isCode: true, lang, code: codeStr, copy: this.copyCode(id, codeStr), copyState: this.state.copied === id ? 'Copied \u2713' : 'Copy', gap: gap || '22px' }; };
+    const list = (items, gap) => ({ isList: true, items, checkIcon, gap: gap || '22px' });
+    const faq = (items, gap) => ({ isFaq: true, items, gap: gap || '22px' });
+    const tree = (html, gap) => ({ isTree: true, html, gap: gap || '22px' });
+    const note = (kind, html, gap) => {
+      const map = {
+        info: { border: 'rgba(var(--a1rgb),0.4)', bg: 'rgba(var(--a1rgb),0.07)', color: 'var(--a2)', icon: this.ic('<circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>', 18) },
+        tip: { border: 'rgba(52,211,153,0.4)', bg: 'rgba(52,211,153,0.08)', color: '#34d399', icon: this.ic('<path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1V18h6v-1.2c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2z"/>', 18) },
+        warn: { border: 'rgba(245,158,11,0.45)', bg: 'rgba(245,158,11,0.09)', color: '#f59e0b', icon: this.ic('<path d="M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/>', 18) },
+      };
+      const m = map[kind] || map.info;
+      return { isNote: true, html, noteBorder: m.border, noteBg: m.bg, noteColor: m.color, noteIcon: m.icon, gap: gap || '22px' };
+    };
+    const tbl = (rows, gap) => ({ isTable: true, gap: gap || '22px', rows: rows.map((r, i) => ({ k: r[0], v: r[1], bg: i % 2 ? 'rgba(var(--fg),0.02)' : 'transparent', keyColor: r[2] || 'var(--a2)', weight: r[3] || 600 })) });
+
+    const c = (s) => '<code style="font-family:\'JetBrains Mono\';font-size:0.86em;color:var(--a2);background:rgba(var(--a1rgb),0.1);padding:2px 6px;border-radius:5px;">' + s + '</code>';
+    const b = (s) => '<strong style="color:var(--tx-hi);font-weight:600;">' + s + '</strong>';
+    const SC = 'SCRIPT';
+    const scriptTag = '&lt;' + 'script src="https://cdn.jsdelivr.net/npm/apexcharts"&gt;&lt;/' + 'script&gt;';
+
+    const sections = [
+      { id: 'overview', kicker: 'Getting started', title: 'Overview', blocks: [
+        text('Thank you for purchasing ' + b('Nexus UI Kit') + '. It bundles a 28-page admin dashboard and a 6-page SaaS marketing site into one coherent design language, with instant light/dark switching and three accent skins baked in.'),
+        text('Nexus is written in ' + b('plain HTML and CSS') + ', with a small amount of vanilla JavaScript for interactivity and ' + c('ApexCharts') + ' for the dashboards. There is ' + b('no build step') + ' \u2014 open any file in a browser and it just works.'),
+        note('tip', 'New here? The fastest path is ' + b('Quick start') + ' \u2192 ' + b('Theming') + ' \u2192 ' + b('Using components') + '. That\u2019s enough to rebrand and ship.'),
+      ] },
+      { id: 'included', kicker: 'Getting started', title: 'What\u2019s included', blocks: [
+        text('Your download contains three product surfaces plus this documentation:'),
+        tbl([
+          ['Admin Dashboard', '28 pages \u2014 analytics, tables, forms, auth, settings, profile & more'],
+          ['SaaS Landing', '6 marketing pages \u2014 home, pricing, blog, about, contact, 404'],
+          ['Components Gallery', '40+ interactive components in one reference page'],
+          ['Documentation', 'This guide, plus LICENSE.md and CHANGELOG.md'],
+        ]),
+        text('Every surface shares one token system, so a theme or accent change flows across all of them at once.'),
+      ] },
+      { id: 'structure', kicker: 'Getting started', title: 'File structure', blocks: [
+        text('After unzipping you\u2019ll find a flat, readable layout \u2014 no nested tooling folders to decode:'),
+        tree(
+          'nexus-ui-kit/\n' +
+          '\u251C\u2500 <span style="color:var(--a2)">Nexus Admin Dashboard.html</span>     28 dashboard screens\n' +
+          '\u251C\u2500 <span style="color:var(--a2)">Nexus AI SaaS Landing.html</span>       6 marketing pages\n' +
+          '\u251C\u2500 <span style="color:var(--a2)">Nexus Components Gallery.html</span>    component reference\n' +
+          '\u251C\u2500 <span style="color:var(--a2)">Nexus Theme Showcase.html</span>        the demo hub\n' +
+          '\u251C\u2500 <span style="color:var(--a2)">Nexus Documentation.html</span>         this guide\n' +
+          '\u251C\u2500 assets/\n' +
+          '\u2502  \u251C\u2500 fonts/          Space Grotesk, Sora, JetBrains Mono\n' +
+          '\u2502  \u2514\u2500 img/            preview & og images\n' +
+          '\u251C\u2500 <span style="color:var(--tx-hi)">LICENSE.md</span>\n' +
+          '\u2514\u2500 <span style="color:var(--tx-hi)">CHANGELOG.md</span>'
+        ),
+        note('info', 'Each page is ' + b('self-contained') + '. You can delete any file you don\u2019t need and the rest keep working \u2014 there are no shared JS bundles to break.'),
+      ] },
+      { id: 'quickstart', kicker: 'Getting started', title: 'Quick start', blocks: [
+        text('The absolute fastest way to preview: unzip and double-click any ' + c('.html') + ' file. For live-reload while editing, serve the folder with any static server:'),
+        code('bash', '# option A \u2014 open directly, no server\nopen "Nexus Admin Dashboard.html"\n\n# option B \u2014 serve locally with live paths\nnpx serve .\n#  \u2192 http://localhost:3000'),
+        text('To deploy, drop the whole folder onto any static host \u2014 ' + b('Netlify, Vercel, GitHub Pages, S3, or plain nginx') + '. No Node runtime is required in production.'),
+        code('bash', '# deploy to Netlify in one line\nnpx netlify-cli deploy --dir . --prod'),
+      ] },
+      { id: 'theming', kicker: 'Theming', title: 'Light / dark & accents', blocks: [
+        text('Theme and accent are controlled by two attributes on the root ' + c('#nx-root') + ' element. Set them in the HTML for a default, or let the on-page control write them to ' + c('localStorage') + '.'),
+        code('html', '<!-- theme: dark | light   accent: violet | emerald | orange -->\n<div id="nx-root" data-theme="dark" data-accent="violet">\n  \u2026 your page \u2026\n</div>'),
+        text('The floating control in the corner of every page toggles these live. Your visitor\u2019s choice persists across pages because it\u2019s stored under the ' + c('nx-theme') + ' and ' + c('nx-accent') + ' keys.'),
+        note('info', 'Want a single fixed theme with no switcher? Delete the control bar markup and hard-code ' + c('data-theme') + ' \u2014 the CSS variables do the rest.'),
+      ] },
+      { id: 'customize', kicker: 'Theming', title: 'Customization', blocks: [
+        text('The entire palette lives in CSS custom properties inside the ' + c('#nx-root') + ' block. Change these and every page rebrands at once \u2014 no find-and-replace across files.'),
+        tbl([
+          ['--a1 / --a2 / --a3', 'Accent ramp \u2014 base, light, secondary'],
+          ['--a1rgb / --a3rgb', 'RGB triplets for translucent accent fills'],
+          ['--bg / --bg-2', 'Page background & elevated surface'],
+          ['--tx-hi \u2026 --tx-5', 'Text scale, high-contrast to muted'],
+        ]),
+        text('To add a brand-new accent skin, copy an existing ' + c('[data-accent]') + ' block and give it a new name:'),
+        code('css', '#nx-root[data-accent=\'ocean\']{\n  --a1:#0ea5e9; --a2:#38bdf8; --a3:#22d3ee;\n  --a1rgb:14,165,233; --a3rgb:34,211,238;\n}'),
+        note('tip', 'Typography is just two Google Fonts: ' + b('Space Grotesk') + ' for headings and ' + b('Sora') + ' for body. Swap the font ' + c('link') + ' and two ' + c('font-family') + ' declarations to restyle everything.'),
+      ] },
+      { id: 'components', kicker: 'Building', title: 'Using components', blocks: [
+        text('Every component is plain markup styled with inline styles and the shared CSS variables. To reuse one, open ' + b('Nexus Components Gallery') + ', find the element, and copy its block straight into your page.'),
+        list([
+          b('Buttons, badges & chips') + ' \u2014 solid, ghost, gradient and icon variants',
+          b('Forms') + ' \u2014 inputs, selects, toggles, checkboxes, sliders, validation states',
+          b('Data display') + ' \u2014 tables, KPI cards, stat tiles, timelines, avatars',
+          b('Overlays') + ' \u2014 modals, drawers, tooltips, toasts, dropdowns',
+          b('Navigation') + ' \u2014 sidebars, tabs, breadcrumbs, pagination, steppers',
+        ]),
+        note('info', 'Because styling is inline, a copied component carries its own look \u2014 it won\u2019t break if you paste it into a page that\u2019s missing a stylesheet.'),
+      ] },
+      { id: 'charts', kicker: 'Building', title: 'Charts', blocks: [
+        text('Dashboard charts use ' + c('ApexCharts') + ', loaded from a CDN. Six chart types ship configured to the theme: area, bar, line, donut, radial and sparkline.'),
+        code('html', '<!-- add once, in the page head -->\n' + scriptTag),
+        code('js', 'const chart = new ApexCharts(el, {\n  chart: { type: \'area\', height: 300, toolbar: { show: false } },\n  colors: [getVar(\'--a1\'), getVar(\'--a3\')],\n  series: [{ name: \'Revenue\', data: [31, 40, 28, 51, 42, 62] }],\n  xaxis: { categories: [\'Jan\',\'Feb\',\'Mar\',\'Apr\',\'May\',\'Jun\'] },\n});\nchart.render();'),
+        note('warn', 'Charts read the accent from CSS variables at render time. If you switch accent, call ' + c('chart.updateOptions()') + ' with the new colors, or simply re-render.'),
+      ] },
+      { id: 'responsive', kicker: 'Building', title: 'Responsive design', blocks: [
+        text('Nexus is mobile-first. Layouts collapse cleanly at three breakpoints, and the dashboard sidebar becomes an off-canvas drawer below ' + c('1024px') + '.'),
+        tbl([
+          ['\u2265 1024px', 'Full desktop \u2014 fixed sidebar, multi-column grids', 'var(--tx-hi)', 600],
+          ['640\u20131024px', 'Tablet \u2014 drawer sidebar, 2-column grids', 'var(--tx-hi)', 600],
+          ['&lt; 640px', 'Phone \u2014 single column, stacked cards', 'var(--tx-hi)', 600],
+        ]),
+        text('Breakpoints are ordinary ' + c('@media') + ' queries \u2014 adjust the pixel values in each page\u2019s style block to match your own grid.'),
+      ] },
+      { id: 'browsers', kicker: 'Building', title: 'Browser support', blocks: [
+        text('Nexus targets all evergreen browsers. It relies on CSS custom properties, grid, flexbox and ' + c(':has()') + ', all of which are broadly supported since 2023.'),
+        list([
+          'Chrome / Edge \u2014 last 2 versions',
+          'Firefox \u2014 last 2 versions',
+          'Safari 16.4+ (desktop & iOS)',
+          b('Not supported:') + ' Internet Explorer',
+        ]),
+      ] },
+      { id: 'faq', kicker: 'Reference', title: 'Frequently asked questions', blocks: [
+        faq([
+          { q: 'Do I need to know React or a framework?', a: 'No. Nexus is plain HTML, CSS and a little vanilla JavaScript. If you can edit an HTML file, you can use it.' },
+          { q: 'Can I use it in a React / Vue / Laravel project?', a: 'Yes. The markup and styles port cleanly \u2014 lift the structure and inline styles into your components, or keep them as static templates.' },
+          { q: 'How do I change the fonts?', a: 'Swap the Google Fonts ' + c('link') + ' in the page head and update the two ' + c('font-family') + ' rules. That\u2019s it.' },
+          { q: 'Are future updates free?', a: 'Yes \u2014 lifetime free updates are included with your license. New pages and fixes arrive as version bumps in ' + c('CHANGELOG.md') + '.' },
+          { q: 'What\u2019s the difference between the two licenses?', a: 'The Regular license covers one end product that\u2019s free to users; the Extended license covers products users pay to access. Full terms are in ' + c('LICENSE.md') + '.' },
+        ]),
+      ] },
+      { id: 'changelog', kicker: 'Reference', title: 'Changelog', blocks: [
+        text('Full release history lives in ' + c('CHANGELOG.md') + ' and on the showcase. Highlights:'),
+        list([
+          b('v1.0.0') + ' \u2014 Initial release: 28-page dashboard, 6-page landing, light/dark, three accents',
+          b('v1.0.1') + ' (planned) \u2014 eCommerce pack: storefront, product & checkout',
+          b('v1.1.0') + ' (planned) \u2014 Full RTL mirroring & i18n scaffolding',
+        ]),
+      ] },
+    ];
+
+    return {
+      theme: this.theme, accent: this.accent,
+      toggleTheme: this.toggleTheme,
+      themeIcon: this.theme === 'dark' ? sun : moon,
+      themeLabel: this.theme === 'dark' ? 'Light' : 'Dark',
+      accentSwatches,
+      sidebarClass: this.state.sidebarOpen ? 'open' : '',
+      sidebarOpen: this.state.sidebarOpen,
+      openSidebar: this.openSidebar, closeSidebar: this.closeSidebar,
+      menuIcon: this.ic('<path d="M3 12h18M3 6h18M3 18h18"/>', 20),
+      closeIcon: this.ic('<path d="M18 6L6 18M6 6l12 12"/>', 20),
+      arrowIcon: this.ic('<path d="M5 12h14M13 6l6 6-6 6"/>', 15),
+      checkIcon,
+      tocGroups, quickLinks, sections,
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Sora:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style> * { box-sizing: border-box; margin: 0; padding: 0; } body { background: #050509; } </style>
+</helmet>
+
+<div style="width:1600px;height:1200px;position:relative;overflow:hidden;background:linear-gradient(160deg,#0c0c16 0%,#08080e 55%,#0a0711 100%);font-family:'Sora',sans-serif;color:#f4f4f7;">
+  <div style="position:absolute;top:-260px;left:50%;transform:translateX(-50%);width:1200px;height:900px;background:radial-gradient(circle,rgba(124,92,255,0.26),transparent 60%);filter:blur(24px);"></div>
+  <div style="position:absolute;bottom:-320px;right:-160px;width:900px;height:800px;background:radial-gradient(circle,rgba(34,211,238,0.2),transparent 62%);filter:blur(24px);"></div>
+  <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.026) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.026) 1px,transparent 1px);background-size:56px 56px;mask-image:radial-gradient(circle at 50% 30%,#000,transparent 78%);"></div>
+
+  <!-- top brand + headline -->
+  <div style="position:relative;z-index:3;padding:96px 0 0;text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:14px;margin-bottom:34px;">
+      <span style="width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,#7c5cff,#22d3ee);display:flex;align-items:center;justify-content:center;font-weight:700;font-family:'Space Grotesk';font-size:26px;color:#0a0a12;box-shadow:0 12px 30px rgba(124,92,255,0.5);">N</span>
+      <span style="font-family:'Space Grotesk';font-weight:600;font-size:26px;letter-spacing:-0.02em;">Nexus <span style="color:#8b8b9c;font-weight:500;">UI Kit</span></span>
+    </div>
+    <div style="display:inline-flex;align-items:center;gap:11px;padding:9px 20px;border-radius:100px;border:1px solid rgba(255,255,255,0.14);background:rgba(255,255,255,0.04);font-size:16px;color:#c4c4d2;margin-bottom:34px;">
+      <span style="width:9px;height:9px;border-radius:50%;background:#22d3ee;box-shadow:0 0 12px #22d3ee;"></span>
+      Admin Dashboard + SaaS Landing · v1.0.0
+    </div>
+    <h1 style="font-family:'Space Grotesk';font-weight:700;font-size:92px;line-height:1.0;letter-spacing:-0.04em;margin-bottom:26px;">Ship in the dark.<br><span style="background:linear-gradient(120deg,#a48bff,#22d3ee);-webkit-background-clip:text;background-clip:text;color:transparent;">And in the light.</span></h1>
+    <p style="font-size:24px;line-height:1.5;color:#9a9aab;max-width:840px;margin:0 auto;">A polished dashboard suite and a conversion-ready landing — instant light/dark, three accent skins, 40+ components, zero build step.</p>
+  </div>
+
+  <!-- device collage -->
+  <div style="position:absolute;left:0;right:0;bottom:0;height:560px;z-index:2;">
+    <!-- browser (dashboard) -->
+    <div style="position:absolute;left:50%;bottom:-70px;transform:translateX(-50%);width:1120px;border-radius:18px;overflow:hidden;border:1px solid rgba(255,255,255,0.12);background:#0d0d14;box-shadow:0 60px 120px rgba(0,0,0,0.6);">
+      <div style="display:flex;align-items:center;gap:9px;padding:15px 20px;background:#141420;border-bottom:1px solid rgba(255,255,255,0.06);">
+        <span style="width:14px;height:14px;border-radius:50%;background:#ff5f57;"></span>
+        <span style="width:14px;height:14px;border-radius:50%;background:#febc2e;"></span>
+        <span style="width:14px;height:14px;border-radius:50%;background:#28c840;"></span>
+        <div style="flex:1;margin:0 16px;text-align:center;font-family:'JetBrains Mono';font-size:14px;color:#6f6f80;background:rgba(255,255,255,0.05);border-radius:8px;padding:7px 14px;">nexus-ui.kit/admin</div>
+      </div>
+      <div style="width:1120px;height:520px;overflow:hidden;">
+        <iframe src="Nexus Admin Dashboard.dc.html" title="Dashboard" scrolling="no" style="width:1600px;height:743px;border:0;transform:scale(0.7);transform-origin:top left;pointer-events:none;"></iframe>
+      </div>
+    </div>
+
+    <!-- phone (landing) left -->
+    <div style="position:absolute;left:84px;bottom:36px;width:230px;border-radius:36px;background:linear-gradient(160deg,#1b1b24,#0a0a10);padding:10px;border:1px solid rgba(255,255,255,0.12);box-shadow:0 44px 80px rgba(0,0,0,0.6);transform:rotate(-7deg);z-index:3;">
+      <div style="position:relative;border-radius:28px;overflow:hidden;background:#08080c;width:100%;height:440px;">
+        <div style="position:absolute;top:11px;left:50%;transform:translateX(-50%);width:80px;height:22px;border-radius:100px;background:#050508;z-index:5;"></div>
+        <iframe src="Nexus AI SaaS Landing.dc.html" title="Landing" scrolling="no" style="width:390px;height:748px;border:0;transform:scale(0.538);transform-origin:top left;pointer-events:none;"></iframe>
+      </div>
+    </div>
+
+    <!-- phone (components) right -->
+    <div style="position:absolute;right:84px;bottom:36px;width:230px;border-radius:36px;background:linear-gradient(160deg,#1b1b24,#0a0a10);padding:10px;border:1px solid rgba(255,255,255,0.12);box-shadow:0 44px 80px rgba(0,0,0,0.6);transform:rotate(7deg);z-index:3;">
+      <div style="position:relative;border-radius:28px;overflow:hidden;background:#08080c;width:100%;height:440px;">
+        <div style="position:absolute;top:11px;left:50%;transform:translateX(-50%);width:80px;height:22px;border-radius:100px;background:#050508;z-index:5;"></div>
+        <iframe src="Nexus Components Gallery.dc.html" title="Components" scrolling="no" style="width:390px;height:748px;border:0;transform:scale(0.538);transform-origin:top left;pointer-events:none;"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <!-- fade over bottom of devices -->
+  <div style="position:absolute;left:0;right:0;bottom:0;height:120px;background:linear-gradient(to top,#0a0711,transparent);z-index:4;"></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1600,&quot;height&quot;:1200}}"></script>
+</body>
+</html>

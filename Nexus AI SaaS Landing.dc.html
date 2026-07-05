@@ -1,0 +1,1353 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  #nx-root {
+    --a1:#7c5cff; --a2:#a48bff; --a3:#22d3ee; --a1rgb:124,92,255; --a3rgb:34,211,238;
+    --fg:255,255,255; --bg-rgb:8,8,12;
+    --bg:#08080c; --bg-2:#0a0a12;
+    --tx-hi:#f4f4f7; --tx-0:#f0f0f5; --tx-1:#e9e9ef; --tx-2:#c4c4d2; --tx-3:#9a9aab; --tx-4:#8b8b9c; --tx-5:#6f6f80;
+  }
+  #nx-root[data-accent='emerald']{ --a1:#10b981; --a2:#34d399; --a3:#2dd4bf; --a1rgb:16,185,129; --a3rgb:45,212,191; }
+  #nx-root[data-accent='orange']{ --a1:#f97316; --a2:#fb923c; --a3:#f59e0b; --a1rgb:249,115,22; --a3rgb:245,158,11; }
+  #nx-root[data-theme='light']{
+    --fg:22,24,38; --bg-rgb:244,245,248;
+    --bg:#f4f5f8; --bg-2:#ffffff;
+    --tx-hi:#14151c; --tx-0:#1a1b22; --tx-1:#24252f; --tx-2:#3a3b46; --tx-3:#565762; --tx-4:#6b6c77; --tx-5:#8a8b95;
+  }
+  html { scroll-behavior: smooth; }
+  body { background: #08080c; }
+  body:has(#nx-root[data-theme='light']) { background: #f4f5f8; }
+  ::selection { background: rgba(var(--a1rgb),0.35); color: #fff; }
+  input, textarea, select, button { font-family: 'Sora', sans-serif; }
+  input::placeholder, textarea::placeholder { color: var(--tx-5); }
+  @keyframes nx-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-18px); } }
+  @keyframes nx-float2 { 0%,100% { transform: translateY(0); } 50% { transform: translateY(22px); } }
+  @keyframes nx-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  @keyframes nx-pulse { 0%,100% { opacity: .45; } 50% { opacity: 1; } }
+  @keyframes nx-drift { 0% { background-position: 0 0; } 100% { background-position: 60px 60px; } }
+  .nx-link { transition: color .2s; }
+  .nx-link:hover { color: var(--tx-hi) !important; }
+  .nx-themebtn { transition: background .2s, border-color .2s, transform .15s; }
+  .nx-themebtn:hover { transform: translateY(-1px); }
+  .nx-card { transition: transform .35s cubic-bezier(.2,.7,.2,1), border-color .35s, background .35s, box-shadow .35s, opacity .7s ease; }
+  [data-reveal] { opacity: 0; transform: translateY(28px); }
+  [data-reveal][data-show] { opacity: 1; transform: none; }
+  [data-reveal]:not(.nx-card) { transition: opacity .7s cubic-bezier(.22,.61,.36,1), transform .7s cubic-bezier(.22,.61,.36,1); }
+  @media (prefers-reduced-motion: reduce) { [data-reveal] { opacity: 1 !important; transform: none !important; transition: none !important; } }
+</style>
+</helmet>
+
+<div id="nx-root" data-theme="{{ theme }}" data-accent="{{ accent }}" style="background:var(--bg);color:var(--tx-hi);font-family:'Sora',sans-serif;overflow-x:hidden;position:relative;min-height:100vh;transition:background .3s,color .3s;">
+
+  <!-- ================= THEME CONTROL BAR ================= -->
+  <div style="position:fixed;bottom:20px;left:20px;z-index:90;display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:100px;background:rgba(var(--bg-rgb),0.82);backdrop-filter:blur(14px);border:1px solid rgba(var(--fg),0.12);box-shadow:0 12px 34px rgba(0,0,0,0.35);">
+    <button onClick="{{ toggleTheme }}" class="nx-themebtn" aria-label="Toggle theme" title="Toggle light / dark" style="display:flex;align-items:center;gap:7px;background:rgba(var(--fg),0.06);border:1px solid rgba(var(--fg),0.12);color:var(--tx-hi);border-radius:100px;padding:7px 13px;cursor:pointer;font-family:'Sora',sans-serif;font-size:12.5px;font-weight:600;">
+      <span data-html="{{ themeIcon }}" style="display:flex;"></span>{{ themeLabel }}
+    </button>
+    <span style="width:1px;height:20px;background:rgba(var(--fg),0.14);"></span>
+    <div style="display:flex;align-items:center;gap:7px;">
+      <sc-for list="{{ accentSwatches }}" as="sw" hint-placeholder-count="3">
+        <button onClick="{{ sw.pick }}" aria-label="{{ sw.name }}" title="{{ sw.name }}" class="nx-themebtn" style="width:22px;height:22px;border-radius:50%;cursor:pointer;background:{{ sw.grad }};border:2px solid {{ sw.ring }};"></button>
+      </sc-for>
+    </div>
+  </div>
+
+
+  <!-- fixed animated grid + aurora backdrop -->
+  <div style="position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(var(--fg),0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(var(--fg),0.025) 1px,transparent 1px);background-size:60px 60px;animation:nx-drift 8s linear infinite;-webkit-mask-image:radial-gradient(ellipse 90% 60% at 50% 0%,#000 30%,transparent 75%);mask-image:radial-gradient(ellipse 90% 60% at 50% 0%,#000 30%,transparent 75%);"></div>
+  <div style="position:fixed;top:-280px;left:50%;transform:translateX(-50%);width:1000px;height:900px;background:radial-gradient(circle,rgba(var(--a1rgb),0.28),transparent 62%);filter:blur(30px);pointer-events:none;z-index:0;animation:nx-float 12s ease-in-out infinite;"></div>
+  <div style="position:fixed;top:500px;right:-320px;width:760px;height:760px;background:radial-gradient(circle,rgba(var(--a3rgb),0.16),transparent 65%);filter:blur(30px);pointer-events:none;z-index:0;animation:nx-float2 15s ease-in-out infinite;"></div>
+
+  <!-- ===== HEADER ===== -->
+  <header style="position:sticky;top:0;z-index:60;backdrop-filter:blur(18px);background:rgba(var(--bg-rgb),0.7);border-bottom:1px solid rgba(var(--fg),0.07);">
+    <div style="max-width:1240px;margin:0 auto;padding:15px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px;">
+      <a href="#" onClick="{{ goHome }}" style="display:flex;align-items:center;gap:11px;text-decoration:none;color:var(--tx-hi);">
+        <span style="width:33px;height:33px;border-radius:9px;background:linear-gradient(135deg,var(--a1),var(--a3));display:flex;align-items:center;justify-content:center;font-weight:700;font-family:'Space Grotesk';box-shadow:0 6px 20px rgba(var(--a1rgb),0.45);">N</span>
+        <span style="font-family:'Space Grotesk';font-weight:600;font-size:19px;letter-spacing:-0.02em;">{{ brandName }}</span>
+      </a>
+      <nav style="display:flex;align-items:center;gap:32px;" class="nx-desknav">
+        <a href="#" onClick="{{ goHome }}" class="nx-link" style="color:{{ navHome }};text-decoration:none;font-size:14.5px;font-weight:500;">Home</a>
+        <a href="#" onClick="{{ goFeatures }}" class="nx-link" style="color:{{ navFeatures }};text-decoration:none;font-size:14.5px;font-weight:500;">Features</a>
+        <a href="#" onClick="{{ goPricing }}" class="nx-link" style="color:{{ navPricing }};text-decoration:none;font-size:14.5px;font-weight:500;">Pricing</a>
+        <a href="#" onClick="{{ goAbout }}" class="nx-link" style="color:{{ navAbout }};text-decoration:none;font-size:14.5px;font-weight:500;">About</a>
+        <a href="#" onClick="{{ goBlog }}" class="nx-link" style="color:{{ navBlog }};text-decoration:none;font-size:14.5px;font-weight:500;">Blog</a>
+        <a href="#" onClick="{{ goContact }}" class="nx-link" style="color:{{ navContact }};text-decoration:none;font-size:14.5px;font-weight:500;">Contact</a>
+      </nav>
+      <div style="display:flex;align-items:center;gap:13px;">
+        <a href="#" class="nx-link nx-desknav" style="color:#d5d5e0;text-decoration:none;font-size:14.5px;font-weight:500;">Sign in</a>
+        <a href="#" onClick="{{ goPricing }}" style="text-decoration:none;font-size:14.5px;font-weight:600;color:#0a0a12;background:linear-gradient(135deg,var(--a2),var(--a3));padding:10px 20px;border-radius:10px;box-shadow:0 6px 22px rgba(var(--a1rgb),0.4);" style-hover="filter:brightness(1.08);">Get started</a>
+        <button onClick="{{ toggleMenu }}" aria-label="Menu" class="nx-mobtog" style="display:none;background:rgba(var(--fg),0.06);border:1px solid rgba(var(--fg),0.12);border-radius:9px;width:40px;height:40px;color:#fff;cursor:pointer;align-items:center;justify-content:center;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        </button>
+      </div>
+    </div>
+    <sc-if value="{{ menuOpen }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:8px 24px 20px;display:flex;flex-direction:column;gap:2px;border-top:1px solid rgba(var(--fg),0.06);">
+        <a href="#" onClick="{{ goHome }}" style="color:#d5d5e0;text-decoration:none;font-size:15px;padding:11px 0;">Home</a>
+        <a href="#" onClick="{{ goFeatures }}" style="color:#d5d5e0;text-decoration:none;font-size:15px;padding:11px 0;">Features</a>
+        <a href="#" onClick="{{ goPricing }}" style="color:#d5d5e0;text-decoration:none;font-size:15px;padding:11px 0;">Pricing</a>
+        <a href="#" onClick="{{ goAbout }}" style="color:#d5d5e0;text-decoration:none;font-size:15px;padding:11px 0;">About</a>
+        <a href="#" onClick="{{ goBlog }}" style="color:#d5d5e0;text-decoration:none;font-size:15px;padding:11px 0;">Blog</a>
+        <a href="#" onClick="{{ goContact }}" style="color:#d5d5e0;text-decoration:none;font-size:15px;padding:11px 0;">Contact</a>
+      </div>
+    </sc-if>
+  </header>
+
+  <!-- ============================================================ -->
+  <!-- ===================== HOME PAGE ============================ -->
+  <!-- ============================================================ -->
+  <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+  <main style="position:relative;z-index:1;">
+
+    <!-- HERO -->
+    <section style="max-width:1000px;margin:0 auto;padding:92px 24px 36px;text-align:center;">
+      <div data-reveal style="display:inline-flex;align-items:center;gap:9px;padding:7px 15px;border-radius:100px;border:1px solid rgba(var(--fg),0.12);background:rgba(var(--fg),0.04);font-size:13px;color:#c9c9d6;margin-bottom:30px;">
+        <span style="width:7px;height:7px;border-radius:50%;background:var(--a3);box-shadow:0 0 10px var(--a3);animation:nx-pulse 2s infinite;"></span>
+        New — {{ brandName }} 3.0 with agentic workflows
+      </div>
+      <h1 data-reveal style="font-family:'Space Grotesk';font-weight:700;font-size:clamp(42px,6.4vw,80px);line-height:1.02;letter-spacing:-0.035em;margin-bottom:26px;">
+        The AI workspace that<br>
+        <span style="background:linear-gradient(120deg,var(--a2) 10%,var(--a3) 90%);-webkit-background-clip:text;background-clip:text;color:transparent;">thinks alongside your team</span>
+      </h1>
+      <p data-reveal style="max-width:600px;margin:0 auto 38px;font-size:clamp(16px,2vw,19px);line-height:1.65;color:#a6a6b6;">
+        Automate the busywork, surface the insights, and ship faster. {{ brandName }} unifies your docs, data, and chat into one intelligent, secure workspace.
+      </p>
+      <div data-reveal style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-bottom:18px;">
+        <a href="#" onClick="{{ goPricing }}" style="text-decoration:none;font-size:15.5px;font-weight:600;color:#0a0a12;background:linear-gradient(135deg,var(--a2),var(--a3));padding:15px 30px;border-radius:12px;box-shadow:0 10px 32px rgba(var(--a1rgb),0.45);" style-hover="transform:translateY(-2px);filter:brightness(1.06);">Start free trial</a>
+        <a href="#" onClick="{{ goFeatures }}" style="text-decoration:none;font-size:15.5px;font-weight:600;color:var(--tx-0);background:rgba(var(--fg),0.05);border:1px solid rgba(var(--fg),0.14);padding:15px 28px;border-radius:12px;display:inline-flex;align-items:center;gap:9px;" style-hover="background:rgba(var(--fg),0.1);">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          Watch demo
+        </a>
+      </div>
+      <p data-reveal style="font-size:13px;color:var(--tx-5);">No credit card required · 14-day free trial · Cancel anytime</p>
+    </section>
+
+    <!-- HERO MOCKUP -->
+    <section style="max-width:1080px;margin:0 auto;padding:20px 24px 40px;">
+      <div data-reveal style="border-radius:18px;border:1px solid rgba(var(--fg),0.1);background:linear-gradient(160deg,rgba(20,20,30,0.9),rgba(12,12,18,0.95));box-shadow:0 40px 120px rgba(var(--a1rgb),0.25),0 8px 40px rgba(0,0,0,0.6);overflow:hidden;">
+        <div style="display:flex;align-items:center;gap:8px;padding:14px 18px;border-bottom:1px solid rgba(var(--fg),0.07);">
+          <span style="width:11px;height:11px;border-radius:50%;background:#ff5f57;"></span>
+          <span style="width:11px;height:11px;border-radius:50%;background:#febc2e;"></span>
+          <span style="width:11px;height:11px;border-radius:50%;background:#28c840;"></span>
+          <div style="margin-left:14px;flex:1;height:24px;border-radius:7px;background:rgba(var(--fg),0.05);max-width:340px;"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:210px 1fr;min-height:400px;" class="nx-mockgrid">
+          <div style="border-right:1px solid rgba(var(--fg),0.07);padding:18px 14px;display:flex;flex-direction:column;gap:6px;" class="nx-mocksb">
+            <div style="display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:9px;background:rgba(var(--a1rgb),0.16);border:1px solid rgba(var(--a1rgb),0.3);color:#c9beff;font-size:13px;font-weight:600;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+              Dashboard
+            </div>
+            <div style="display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:9px;color:var(--tx-4);font-size:13px;"><span style="width:15px;height:15px;border-radius:4px;background:rgba(var(--fg),0.09);"></span>Projects</div>
+            <div style="display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:9px;color:var(--tx-4);font-size:13px;"><span style="width:15px;height:15px;border-radius:4px;background:rgba(var(--fg),0.09);"></span>Automations</div>
+            <div style="display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:9px;color:var(--tx-4);font-size:13px;"><span style="width:15px;height:15px;border-radius:4px;background:rgba(var(--fg),0.09);"></span>Insights</div>
+            <div style="display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:9px;color:var(--tx-4);font-size:13px;"><span style="width:15px;height:15px;border-radius:4px;background:rgba(var(--fg),0.09);"></span>Team</div>
+            <div style="margin-top:auto;padding:12px;border-radius:11px;background:linear-gradient(135deg,rgba(var(--a1rgb),0.18),rgba(var(--a3rgb),0.1));border:1px solid rgba(var(--fg),0.1);">
+              <div style="font-size:12px;font-weight:600;color:#e6e1ff;margin-bottom:4px;">AI credits</div>
+              <div style="height:6px;border-radius:4px;background:rgba(var(--fg),0.12);overflow:hidden;"><div style="width:68%;height:100%;background:linear-gradient(90deg,var(--a2),var(--a3));"></div></div>
+            </div>
+          </div>
+          <div style="padding:22px 24px;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;">
+              <div>
+                <div style="font-family:'Space Grotesk';font-size:19px;font-weight:600;color:var(--tx-hi);margin-bottom:4px;">Good morning, Alex</div>
+                <div style="font-size:13px;color:var(--tx-4);">Your agents completed 24 tasks overnight</div>
+              </div>
+              <div style="display:flex;gap:8px;align-items:center;padding:8px 14px;border-radius:10px;background:linear-gradient(135deg,var(--a2),var(--a3));color:#0a0a12;font-size:13px;font-weight:600;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.4H22l-6 4.4 2.3 7.2L12 16.6 5.7 21l2.3-7.2-6-4.4h7.6z"/></svg>
+                Ask AI
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px;">
+              <div style="padding:15px;border-radius:12px;background:rgba(var(--fg),0.03);border:1px solid rgba(var(--fg),0.07);">
+                <div style="font-size:11px;color:var(--tx-4);margin-bottom:7px;">Tasks automated</div>
+                <div style="font-family:'Space Grotesk';font-size:24px;font-weight:700;">1,284</div>
+                <div style="font-size:11px;color:var(--a3);margin-top:4px;">▲ 12% this week</div>
+              </div>
+              <div style="padding:15px;border-radius:12px;background:rgba(var(--fg),0.03);border:1px solid rgba(var(--fg),0.07);">
+                <div style="font-size:11px;color:var(--tx-4);margin-bottom:7px;">Hours saved</div>
+                <div style="font-family:'Space Grotesk';font-size:24px;font-weight:700;">312</div>
+                <div style="font-size:11px;color:var(--a3);margin-top:4px;">▲ 8% this week</div>
+              </div>
+              <div style="padding:15px;border-radius:12px;background:rgba(var(--fg),0.03);border:1px solid rgba(var(--fg),0.07);">
+                <div style="font-size:11px;color:var(--tx-4);margin-bottom:7px;">Accuracy</div>
+                <div style="font-family:'Space Grotesk';font-size:24px;font-weight:700;">99.2%</div>
+                <div style="font-size:11px;color:var(--a3);margin-top:4px;">▲ 0.4% this week</div>
+              </div>
+            </div>
+            <div style="padding:18px;border-radius:12px;background:rgba(var(--fg),0.03);border:1px solid rgba(var(--fg),0.07);">
+              <div style="font-size:12px;color:var(--tx-4);margin-bottom:14px;">Weekly automation volume</div>
+              <div style="display:flex;align-items:flex-end;gap:9px;height:104px;">
+                <div style="flex:1;height:38%;border-radius:6px 6px 0 0;background:rgba(var(--a1rgb),0.4);"></div>
+                <div style="flex:1;height:56%;border-radius:6px 6px 0 0;background:rgba(var(--a1rgb),0.5);"></div>
+                <div style="flex:1;height:44%;border-radius:6px 6px 0 0;background:rgba(var(--a1rgb),0.45);"></div>
+                <div style="flex:1;height:72%;border-radius:6px 6px 0 0;background:linear-gradient(180deg,var(--a2),var(--a1));"></div>
+                <div style="flex:1;height:63%;border-radius:6px 6px 0 0;background:rgba(var(--a1rgb),0.55);"></div>
+                <div style="flex:1;height:88%;border-radius:6px 6px 0 0;background:linear-gradient(180deg,var(--a3),var(--a1));"></div>
+                <div style="flex:1;height:78%;border-radius:6px 6px 0 0;background:rgba(var(--a3rgb),0.55);"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LOGO MARQUEE -->
+    <section style="padding:44px 0 40px;">
+      <p style="text-align:center;font-size:13px;letter-spacing:0.12em;text-transform:uppercase;color:var(--tx-5);margin-bottom:26px;">Trusted by fast-moving teams worldwide</p>
+      <div style="overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent);mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent);">
+        <div style="display:flex;gap:64px;width:max-content;animation:nx-marquee 26s linear infinite;">
+          <sc-for list="{{ logos }}" as="logo" hint-placeholder-count="12">
+            <span style="font-family:'Space Grotesk';font-weight:600;font-size:22px;color:#5c5c6e;white-space:nowrap;letter-spacing:-0.01em;">{{ logo }}</span>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+
+    <!-- BENTO FEATURES -->
+    <section style="max-width:1240px;margin:0 auto;padding:70px 24px;">
+      <div data-reveal style="text-align:center;max-width:640px;margin:0 auto 52px;">
+        <span style="font-size:13px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--a2);">Platform</span>
+        <h2 style="font-family:'Space Grotesk';font-weight:700;font-size:clamp(30px,4.4vw,46px);line-height:1.1;letter-spacing:-0.03em;margin:14px 0 16px;">One intelligent core. Endless leverage.</h2>
+        <p style="font-size:17px;line-height:1.6;color:#a6a6b6;">Every capability in {{ brandName }} is powered by the same context-aware engine — so your tools finally work together.</p>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:16px;" class="nx-bento">
+        <div data-reveal class="nx-card" style="grid-column:span 3;padding:32px;border-radius:18px;background:linear-gradient(160deg,rgba(var(--a1rgb),0.14),rgba(var(--a3rgb),0.06));border:1px solid rgba(var(--fg),0.09);overflow:hidden;position:relative;" style-hover="transform:translateY(-4px);border-color:rgba(var(--a1rgb),0.4);">
+          <div style="width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,rgba(var(--a1rgb),0.35),rgba(var(--a3rgb),0.22));border:1px solid rgba(var(--fg),0.12);display:flex;align-items:center;justify-content:center;color:#e6e1ff;margin-bottom:18px;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.4H22l-6 4.4 2.3 7.2L12 16.6 5.7 21l2.3-7.2-6-4.4h7.6z"/></svg></div>
+          <h3 style="font-family:'Space Grotesk';font-size:22px;font-weight:600;margin-bottom:10px;letter-spacing:-0.01em;">Agentic automation</h3>
+          <p style="font-size:15px;line-height:1.62;color:#b8b8c6;max-width:420px;">Deploy AI agents that plan and execute multi-step tasks across every tool you use — from research to reporting — with zero scripts.</p>
+          <div style="display:flex;gap:8px;margin-top:22px;flex-wrap:wrap;">
+            <span style="font-size:12px;padding:5px 11px;border-radius:8px;background:rgba(var(--fg),0.06);border:1px solid rgba(var(--fg),0.1);color:var(--tx-2);">Auto-triage</span>
+            <span style="font-size:12px;padding:5px 11px;border-radius:8px;background:rgba(var(--fg),0.06);border:1px solid rgba(var(--fg),0.1);color:var(--tx-2);">Multi-step</span>
+            <span style="font-size:12px;padding:5px 11px;border-radius:8px;background:rgba(var(--fg),0.06);border:1px solid rgba(var(--fg),0.1);color:var(--tx-2);">Self-correcting</span>
+          </div>
+        </div>
+        <div data-reveal class="nx-card" style="grid-column:span 3;padding:32px;border-radius:18px;background:linear-gradient(160deg,rgba(var(--a3rgb),0.1),rgba(var(--a1rgb),0.06));border:1px solid rgba(var(--fg),0.09);" style-hover="transform:translateY(-4px);border-color:rgba(var(--a3rgb),0.4);">
+          <div style="width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,rgba(var(--a3rgb),0.3),rgba(var(--a1rgb),0.2));border:1px solid rgba(var(--fg),0.12);display:flex;align-items:center;justify-content:center;color:#a5edf7;margin-bottom:18px;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h7l-1 8 10-12h-7z"/></svg></div>
+          <h3 style="font-family:'Space Grotesk';font-size:22px;font-weight:600;margin-bottom:10px;letter-spacing:-0.01em;">100+ instant integrations</h3>
+          <p style="font-size:15px;line-height:1.62;color:#b8b8c6;max-width:440px;">Connect Slack, Notion, Google, GitHub and hundreds more in a click. Data flows both ways in real time, keeping every tool in perfect sync.</p>
+        </div>
+        <div data-reveal class="nx-card" style="grid-column:span 2;padding:28px;border-radius:18px;background:rgba(var(--fg),0.025);border:1px solid rgba(var(--fg),0.08);" style-hover="transform:translateY(-4px);border-color:rgba(var(--a3rgb),0.4);">
+          <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,rgba(var(--a3rgb),0.25),rgba(var(--a1rgb),0.15));border:1px solid rgba(var(--fg),0.1);display:flex;align-items:center;justify-content:center;color:#a5edf7;margin-bottom:16px;"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></div>
+          <h3 style="font-family:'Space Grotesk';font-size:18px;font-weight:600;margin-bottom:9px;">Unified search</h3>
+          <p style="font-size:14px;line-height:1.6;color:var(--tx-3);">One question, answers from every doc, message and dataset you own.</p>
+        </div>
+        <div data-reveal class="nx-card" style="grid-column:span 2;padding:28px;border-radius:18px;background:rgba(var(--fg),0.025);border:1px solid rgba(var(--fg),0.08);" style-hover="transform:translateY(-4px);border-color:rgba(var(--a1rgb),0.4);">
+          <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,rgba(var(--a1rgb),0.25),rgba(var(--a3rgb),0.15));border:1px solid rgba(var(--fg),0.1);display:flex;align-items:center;justify-content:center;color:#c9beff;margin-bottom:16px;"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg></div>
+          <h3 style="font-family:'Space Grotesk';font-size:18px;font-weight:600;margin-bottom:9px;">Live insights</h3>
+          <p style="font-size:14px;line-height:1.6;color:var(--tx-3);">Dashboards that update themselves and flag what needs you.</p>
+        </div>
+        <div data-reveal class="nx-card" style="grid-column:span 2;padding:28px;border-radius:18px;background:rgba(var(--fg),0.025);border:1px solid rgba(var(--fg),0.08);" style-hover="transform:translateY(-4px);border-color:rgba(var(--a3rgb),0.4);">
+          <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,rgba(var(--a3rgb),0.25),rgba(var(--a1rgb),0.15));border:1px solid rgba(var(--fg),0.1);display:flex;align-items:center;justify-content:center;color:#a5edf7;margin-bottom:16px;"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+          <h3 style="font-family:'Space Grotesk';font-size:18px;font-weight:600;margin-bottom:9px;">Enterprise security</h3>
+          <p style="font-size:14px;line-height:1.6;color:var(--tx-3);">SOC 2, encryption, SSO and granular access — built in.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRODUCT TABS -->
+    <section style="max-width:1140px;margin:0 auto;padding:60px 24px;">
+      <div data-reveal style="text-align:center;max-width:640px;margin:0 auto 40px;">
+        <span style="font-size:13px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--a3);">Product tour</span>
+        <h2 style="font-family:'Space Grotesk';font-weight:700;font-size:clamp(30px,4.4vw,46px);line-height:1.1;letter-spacing:-0.03em;margin:14px 0 0;">See {{ brandName }} in action</h2>
+      </div>
+      <div data-reveal style="display:flex;justify-content:center;gap:10px;margin-bottom:34px;flex-wrap:wrap;">
+        <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="3">
+          <button onClick="{{ t.select }}" style="cursor:pointer;font-size:14.5px;font-weight:600;padding:11px 22px;border-radius:11px;border:1px solid {{ t.border }};background:{{ t.bg }};color:{{ t.color }};transition:all .25s;">{{ t.label }}</button>
+        </sc-for>
+      </div>
+      <div data-reveal style="border-radius:20px;border:1px solid rgba(var(--fg),0.1);background:linear-gradient(160deg,rgba(20,20,30,0.85),rgba(12,12,18,0.92));box-shadow:0 30px 90px rgba(var(--a1rgb),0.2);overflow:hidden;">
+        <div style="display:grid;grid-template-columns:1fr 1.15fr;gap:0;min-height:360px;" class="nx-tourgrid">
+          <div style="padding:44px 40px;display:flex;flex-direction:column;justify-content:center;border-right:1px solid rgba(var(--fg),0.07);">
+            <div style="font-family:'Space Grotesk';font-size:26px;font-weight:600;letter-spacing:-0.02em;margin-bottom:14px;">{{ activeTab.title }}</div>
+            <p style="font-size:15.5px;line-height:1.65;color:#a6a6b6;margin-bottom:24px;">{{ activeTab.desc }}</p>
+            <div style="display:flex;flex-direction:column;gap:13px;">
+              <sc-for list="{{ activeTab.bullets }}" as="b" hint-placeholder-count="3">
+                <div style="display:flex;align-items:flex-start;gap:11px;font-size:14.5px;color:var(--tx-2);">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--a3)" stroke-width="2.5" style="flex-shrink:0;margin-top:1px;"><path d="M20 6L9 17l-5-5"/></svg>
+                  {{ b }}
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          <div style="padding:34px;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.2);">
+            <div style="width:100%;border-radius:14px;border:1px solid rgba(var(--fg),0.09);background:rgba(var(--fg),0.03);padding:22px;" data-html="{{ activeTab.mock }}"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section style="max-width:1200px;margin:0 auto;padding:60px 24px 70px;">
+      <div data-reveal style="text-align:center;max-width:640px;margin:0 auto 52px;">
+        <span style="font-size:13px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--a2);">How it works</span>
+        <h2 style="font-family:'Space Grotesk';font-weight:700;font-size:clamp(30px,4.4vw,46px);line-height:1.1;letter-spacing:-0.03em;margin:14px 0 16px;">Live in three simple steps</h2>
+        <p style="font-size:17px;line-height:1.6;color:#a6a6b6;">Connect your stack, teach it your workflows, and let the agents run. Most teams automate within an afternoon.</p>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:22px;" class="nx-3grid">
+        <sc-for list="{{ steps }}" as="s" hint-placeholder-count="3">
+          <div data-reveal style="position:relative;padding:30px 26px;border-radius:16px;background:rgba(var(--fg),0.025);border:1px solid rgba(var(--fg),0.08);">
+            <div style="font-family:'Space Grotesk';font-size:15px;font-weight:700;color:#0a0a12;background:linear-gradient(135deg,var(--a2),var(--a3));width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;margin-bottom:20px;box-shadow:0 6px 18px rgba(var(--a1rgb),0.4);">{{ s.n }}</div>
+            <h3 style="font-family:'Space Grotesk';font-size:19px;font-weight:600;margin-bottom:10px;letter-spacing:-0.01em;">{{ s.title }}</h3>
+            <p style="font-size:14.5px;line-height:1.62;color:var(--tx-3);">{{ s.body }}</p>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <!-- INTEGRATIONS -->
+    <section style="max-width:1240px;margin:0 auto;padding:30px 24px 70px;">
+      <div data-reveal style="text-align:center;max-width:640px;margin:0 auto 44px;">
+        <span style="font-size:13px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--a3);">Integrations</span>
+        <h2 style="font-family:'Space Grotesk';font-weight:700;font-size:clamp(28px,4vw,42px);line-height:1.1;letter-spacing:-0.03em;margin:14px 0 16px;">Works with the tools you already love</h2>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:14px;" class="nx-intgrid">
+        <sc-for list="{{ integrations }}" as="ig" hint-placeholder-count="12">
+          <div class="nx-card" style="aspect-ratio:1;border-radius:15px;background:rgba(var(--fg),0.025);border:1px solid rgba(var(--fg),0.08);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;" style-hover="transform:translateY(-4px);background:rgba(var(--fg),0.05);border-color:rgba(var(--a1rgb),0.35);">
+            <div style="width:42px;height:42px;border-radius:11px;background:{{ ig.color }};display:flex;align-items:center;justify-content:center;color:#0a0a12;" data-html="{{ ig.iconSvg }}"></div>
+            <span style="font-size:12.5px;color:var(--tx-3);">{{ ig.name }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <!-- STATS -->
+    <section style="max-width:1200px;margin:0 auto;padding:0 24px 70px;">
+      <div data-reveal style="border-radius:20px;border:1px solid rgba(var(--fg),0.09);background:linear-gradient(135deg,rgba(var(--a1rgb),0.1),rgba(var(--a3rgb),0.06));padding:52px 40px;display:grid;grid-template-columns:repeat(4,1fr);gap:30px;text-align:center;" class="nx-statgrid">
+        <sc-for list="{{ stats }}" as="st" hint-placeholder-count="4">
+          <div>
+            <div style="font-family:'Space Grotesk';font-size:clamp(34px,4.5vw,52px);font-weight:700;letter-spacing:-0.03em;background:linear-gradient(120deg,#c9beff,var(--a3));-webkit-background-clip:text;background-clip:text;color:transparent;">
+              <span data-count="{{ st.value }}">0</span>{{ st.suffix }}
+            </div>
+            <div style="font-size:14px;color:var(--tx-3);margin-top:8px;">{{ st.label }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <!-- TESTIMONIAL WALL -->
+    <section style="max-width:1240px;margin:0 auto;padding:20px 24px 70px;">
+      <div data-reveal style="text-align:center;max-width:640px;margin:0 auto 48px;">
+        <span style="font-size:13px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--a2);">Customers</span>
+        <h2 style="font-family:'Space Grotesk';font-weight:700;font-size:clamp(30px,4.4vw,46px);line-height:1.1;letter-spacing:-0.03em;margin:14px 0 0;">Loved by teams like yours</h2>
+      </div>
+      <div style="columns:3;column-gap:18px;" class="nx-wall">
+        <sc-for list="{{ wall }}" as="w" hint-placeholder-count="6">
+          <div class="nx-card" style="break-inside:avoid;margin-bottom:18px;padding:26px;border-radius:16px;background:rgba(var(--fg),0.025);border:1px solid rgba(var(--fg),0.08);" style-hover="border-color:rgba(var(--a1rgb),0.35);">
+            <div style="display:flex;gap:3px;margin-bottom:14px;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="#febc2e"><path d="M12 2l2.4 7.4H22l-6 4.4 2.3 7.2L12 16.6 5.7 21l2.3-7.2-6-4.4h7.6z"/></svg><svg width="15" height="15" viewBox="0 0 24 24" fill="#febc2e"><path d="M12 2l2.4 7.4H22l-6 4.4 2.3 7.2L12 16.6 5.7 21l2.3-7.2-6-4.4h7.6z"/></svg><svg width="15" height="15" viewBox="0 0 24 24" fill="#febc2e"><path d="M12 2l2.4 7.4H22l-6 4.4 2.3 7.2L12 16.6 5.7 21l2.3-7.2-6-4.4h7.6z"/></svg><svg width="15" height="15" viewBox="0 0 24 24" fill="#febc2e"><path d="M12 2l2.4 7.4H22l-6 4.4 2.3 7.2L12 16.6 5.7 21l2.3-7.2-6-4.4h7.6z"/></svg><svg width="15" height="15" viewBox="0 0 24 24" fill="#febc2e"><path d="M12 2l2.4 7.4H22l-6 4.4 2.3 7.2L12 16.6 5.7 21l2.3-7.2-6-4.4h7.6z"/></svg>
+            </div>
+            <p style="font-size:14.5px;line-height:1.6;color:#d4d4de;margin-bottom:18px;">"{{ w.quote }}"</p>
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div style="width:38px;height:38px;border-radius:50%;background:{{ w.color }};display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk';font-weight:700;font-size:13px;color:#0a0a12;">{{ w.initials }}</div>
+              <div>
+                <div style="font-weight:600;font-size:13.5px;">{{ w.author }}</div>
+                <div style="font-size:12px;color:var(--tx-4);">{{ w.role }}</div>
+              </div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <!-- PRICING PREVIEW -->
+    <section style="max-width:1200px;margin:0 auto;padding:20px 24px 60px;">
+      <div data-reveal style="text-align:center;max-width:640px;margin:0 auto 40px;">
+        <span style="font-size:13px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--a3);">Pricing</span>
+        <h2 style="font-family:'Space Grotesk';font-weight:700;font-size:clamp(30px,4.4vw,46px);line-height:1.1;letter-spacing:-0.03em;margin:14px 0 16px;">Simple, transparent pricing</h2>
+        <p style="font-size:17px;line-height:1.6;color:#a6a6b6;">Start free. Scale when you're ready. No hidden fees, ever.</p>
+      </div>
+      <div data-reveal style="display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:40px;">
+        <span style="font-size:14.5px;font-weight:500;color:{{ monthlyColor }};">Monthly</span>
+        <button onClick="{{ toggleBilling }}" aria-label="Toggle billing" style="width:56px;height:30px;border-radius:100px;border:1px solid rgba(var(--fg),0.15);background:rgba(var(--fg),0.06);position:relative;cursor:pointer;padding:0;">
+          <span style="position:absolute;top:3px;left:{{ knobLeft }};width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,var(--a2),var(--a3));transition:left .25s;box-shadow:0 2px 8px rgba(var(--a1rgb),0.5);"></span>
+        </button>
+        <span style="font-size:14.5px;font-weight:500;color:{{ yearlyColor }};">Yearly</span>
+        <span style="font-size:12px;font-weight:600;color:var(--a3);background:rgba(var(--a3rgb),0.12);border:1px solid rgba(var(--a3rgb),0.25);padding:4px 10px;border-radius:100px;">Save 20%</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;align-items:stretch;" class="nx-3grid">
+        <sc-for list="{{ plans }}" as="p" hint-placeholder-count="3">
+          <div data-reveal style="position:relative;padding:32px 28px;border-radius:18px;background:{{ p.bg }};border:1px solid {{ p.border }};display:flex;flex-direction:column;{{ p.shadow }}">
+            <sc-if value="{{ p.popular }}" hint-placeholder-val="{{ false }}">
+              <span style="position:absolute;top:20px;right:20px;font-size:11.5px;font-weight:600;color:#0a0a12;background:linear-gradient(135deg,var(--a2),var(--a3));padding:5px 12px;border-radius:100px;">Most popular</span>
+            </sc-if>
+            <div style="font-family:'Space Grotesk';font-size:17px;font-weight:600;margin-bottom:6px;">{{ p.name }}</div>
+            <div style="font-size:13.5px;color:var(--tx-3);margin-bottom:22px;min-height:38px;">{{ p.tagline }}</div>
+            <div style="display:flex;align-items:baseline;gap:5px;margin-bottom:4px;">
+              <span style="font-family:'Space Grotesk';font-size:44px;font-weight:700;letter-spacing:-0.03em;">{{ p.price }}</span>
+              <span style="font-size:14px;color:var(--tx-3);">{{ p.period }}</span>
+            </div>
+            <div style="font-size:12.5px;color:var(--tx-5);margin-bottom:26px;">{{ p.billed }}</div>
+            <a href="#" onClick="{{ goPricing }}" style="text-decoration:none;text-align:center;font-size:14.5px;font-weight:600;padding:13px;border-radius:11px;margin-bottom:26px;{{ p.btn }}">{{ p.cta }}</a>
+            <div style="display:flex;flex-direction:column;gap:13px;">
+              <sc-for list="{{ p.features }}" as="feat" hint-placeholder-count="5">
+                <div style="display:flex;align-items:flex-start;gap:11px;font-size:14px;color:var(--tx-2);">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--a3)" stroke-width="2.5" style="flex-shrink:0;margin-top:1px;"><path d="M20 6L9 17l-5-5"/></svg>
+                  {{ feat }}
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+      <div data-reveal style="text-align:center;margin-top:28px;">
+        <a href="#" onClick="{{ goPricing }}" style="color:var(--a2);text-decoration:none;font-size:14.5px;font-weight:600;" style-hover="color:#c9beff;">Compare all features →</a>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section style="max-width:800px;margin:0 auto;padding:40px 24px 80px;">
+      <div data-reveal style="text-align:center;margin-bottom:40px;">
+        <span style="font-size:13px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--a2);">FAQ</span>
+        <h2 style="font-family:'Space Grotesk';font-weight:700;font-size:clamp(28px,4vw,42px);line-height:1.1;letter-spacing:-0.03em;margin:14px 0 0;">Questions, answered</h2>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <sc-for list="{{ faqs }}" as="fq" hint-placeholder-count="5">
+          <div data-reveal style="border-radius:14px;background:rgba(var(--fg),0.025);border:1px solid rgba(var(--fg),0.08);overflow:hidden;">
+            <button onClick="{{ fq.toggle }}" style="width:100%;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 24px;background:none;border:none;cursor:pointer;text-align:left;color:var(--tx-0);font-size:16px;font-weight:500;font-family:'Sora';">
+              {{ fq.q }}
+              <span style="flex-shrink:0;color:var(--a2);transform:{{ fq.rot }};transition:transform .25s;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></span>
+            </button>
+            <sc-if value="{{ fq.open }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:0 24px 22px;font-size:14.5px;line-height:1.65;color:#a6a6b6;">{{ fq.a }}</div>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <div data-html="{{ ctaBlock }}"></div>
+  </main>
+  </sc-if>
+
+  <!-- ============================================================ -->
+  <!-- =================== FEATURES PAGE ========================== -->
+  <!-- ============================================================ -->
+  <sc-if value="{{ isFeatures }}" hint-placeholder-val="{{ false }}">
+  <main style="position:relative;z-index:1;">
+    <section style="max-width:820px;margin:0 auto;padding:80px 24px 20px;text-align:center;">
+      <div data-reveal style="display:inline-flex;align-items:center;gap:9px;padding:7px 15px;border-radius:100px;border:1px solid rgba(var(--fg),0.12);background:rgba(var(--fg),0.04);font-size:13px;color:#c9c9d6;margin-bottom:24px;">Features</div>
+      <h1 data-reveal style="font-family:'Space Grotesk';font-weight:700;font-size:clamp(38px,5.4vw,62px);line-height:1.05;letter-spacing:-0.03em;margin-bottom:22px;">Built for the way<br><span style="background:linear-gradient(120deg,var(--a2),var(--a3));-webkit-background-clip:text;background-clip:text;color:transparent;">modern teams work</span></h1>
+      <p data-reveal style="max-width:560px;margin:0 auto;font-size:18px;line-height:1.6;color:#a6a6b6;">Deep capabilities that stay simple. Explore what makes {{ brandName }} the workspace teams don't want to give up.</p>
+    </section>
+
+    <section style="max-width:1140px;margin:0 auto;padding:50px 24px;display:flex;flex-direction:column;gap:32px;">
+      <sc-for list="{{ featureRows }}" as="r" hint-placeholder-count="4">
+        <div data-reveal class="nx-card" style="border-radius:20px;border:1px solid rgba(var(--fg),0.08);background:rgba(var(--fg),0.02);overflow:hidden;display:grid;grid-template-columns:1fr 1fr;gap:0;" class="nx-frow">
+          <div style="padding:48px 44px;display:flex;flex-direction:column;justify-content:center;order:{{ r.textOrder }};">
+            <span style="font-size:12.5px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--a2);margin-bottom:14px;">{{ r.eyebrow }}</span>
+            <h2 style="font-family:'Space Grotesk';font-size:28px;font-weight:600;letter-spacing:-0.02em;margin-bottom:14px;line-height:1.15;">{{ r.title }}</h2>
+            <p style="font-size:15.5px;line-height:1.65;color:#a6a6b6;margin-bottom:22px;">{{ r.body }}</p>
+            <div style="display:flex;flex-direction:column;gap:12px;">
+              <sc-for list="{{ r.points }}" as="pt" hint-placeholder-count="3">
+                <div style="display:flex;align-items:flex-start;gap:11px;font-size:14.5px;color:var(--tx-2);">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--a3)" stroke-width="2.5" style="flex-shrink:0;margin-top:1px;"><path d="M20 6L9 17l-5-5"/></svg>
+                  {{ pt }}
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          <div style="padding:40px;background:linear-gradient(160deg,rgba(var(--a1rgb),0.1),rgba(var(--a3rgb),0.05));display:flex;align-items:center;justify-content:center;order:{{ r.mockOrder }};" data-html="{{ r.mock }}"></div>
+        </div>
+      </sc-for>
+    </section>
+
+    <!-- AWESOME FEATURES -->
+    <section style="max-width:1200px;margin:0 auto;padding:40px 24px 20px;">
+      <div data-reveal style="text-align:center;max-width:660px;margin:0 auto 48px;">
+        <span style="font-size:13px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--a3);">Under the hood</span>
+        <h2 style="font-family:'Space Grotesk';font-weight:700;font-size:clamp(30px,4.4vw,46px);line-height:1.1;letter-spacing:-0.03em;margin:14px 0 16px;">Awesome features, out of the box</h2>
+        <p style="font-size:17px;line-height:1.6;color:#a6a6b6;">Clean, documented, framework-friendly code — everything a modern front-end needs, and nothing it doesn't.</p>
+      </div>
+      <div class="nx-4grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;">
+        <sc-for list="{{ awesomeFeatures }}" as="af" hint-placeholder-count="12">
+          <div class="nx-card" style="padding:26px 16px;border-radius:16px;background:rgba(var(--fg),0.025);border:1px solid rgba(var(--fg),0.08);display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px;" style-hover="transform:translateY(-4px);border-color:rgba(var(--a1rgb),0.35);background:rgba(var(--fg),0.05);">
+            <div style="width:56px;height:56px;border-radius:50%;background:rgba(var(--fg),0.05);border:1px solid rgba(var(--fg),0.09);display:flex;align-items:center;justify-content:center;" data-html="{{ af.icon }}"></div>
+            <span style="font-size:13.5px;font-weight:500;color:var(--tx-2);line-height:1.35;">{{ af.label }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div data-reveal style="text-align:center;margin-top:34px;">
+        <span style="display:inline-block;font-size:14px;font-weight:600;color:var(--a2);border:1px solid rgba(var(--a1rgb),0.4);background:rgba(var(--a1rgb),0.08);padding:12px 28px;border-radius:100px;">+ Many more</span>
+      </div>
+    </section>
+
+    <div data-html="{{ ctaBlock }}"></div>
+  </main>
+  </sc-if>
+
+  <!-- ============================================================ -->
+  <!-- ==================== PRICING PAGE ========================== -->
+  <!-- ============================================================ -->
+  <sc-if value="{{ isPricing }}" hint-placeholder-val="{{ false }}">
+  <main style="position:relative;z-index:1;">
+    <section style="max-width:820px;margin:0 auto;padding:80px 24px 10px;text-align:center;">
+      <h1 data-reveal style="font-family:'Space Grotesk';font-weight:700;font-size:clamp(38px,5.4vw,62px);line-height:1.05;letter-spacing:-0.03em;margin-bottom:20px;">Pricing that scales<br><span style="background:linear-gradient(120deg,var(--a2),var(--a3));-webkit-background-clip:text;background-clip:text;color:transparent;">with your ambition</span></h1>
+      <p data-reveal style="max-width:520px;margin:0 auto;font-size:18px;line-height:1.6;color:#a6a6b6;">Straightforward plans, no surprises. Switch or cancel any time.</p>
+    </section>
+
+    <section style="max-width:1200px;margin:0 auto;padding:36px 24px 20px;">
+      <div data-reveal style="display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:40px;">
+        <span style="font-size:14.5px;font-weight:500;color:{{ monthlyColor }};">Monthly</span>
+        <button onClick="{{ toggleBilling }}" aria-label="Toggle billing" style="width:56px;height:30px;border-radius:100px;border:1px solid rgba(var(--fg),0.15);background:rgba(var(--fg),0.06);position:relative;cursor:pointer;padding:0;">
+          <span style="position:absolute;top:3px;left:{{ knobLeft }};width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,var(--a2),var(--a3));transition:left .25s;box-shadow:0 2px 8px rgba(var(--a1rgb),0.5);"></span>
+        </button>
+        <span style="font-size:14.5px;font-weight:500;color:{{ yearlyColor }};">Yearly</span>
+        <span style="font-size:12px;font-weight:600;color:var(--a3);background:rgba(var(--a3rgb),0.12);border:1px solid rgba(var(--a3rgb),0.25);padding:4px 10px;border-radius:100px;">Save 20%</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;align-items:stretch;" class="nx-3grid">
+        <sc-for list="{{ plans }}" as="p" hint-placeholder-count="3">
+          <div data-reveal style="position:relative;padding:32px 28px;border-radius:18px;background:{{ p.bg }};border:1px solid {{ p.border }};display:flex;flex-direction:column;{{ p.shadow }}">
+            <sc-if value="{{ p.popular }}" hint-placeholder-val="{{ false }}">
+              <span style="position:absolute;top:20px;right:20px;font-size:11.5px;font-weight:600;color:#0a0a12;background:linear-gradient(135deg,var(--a2),var(--a3));padding:5px 12px;border-radius:100px;">Most popular</span>
+            </sc-if>
+            <div style="font-family:'Space Grotesk';font-size:17px;font-weight:600;margin-bottom:6px;">{{ p.name }}</div>
+            <div style="font-size:13.5px;color:var(--tx-3);margin-bottom:22px;min-height:38px;">{{ p.tagline }}</div>
+            <div style="display:flex;align-items:baseline;gap:5px;margin-bottom:4px;">
+              <span style="font-family:'Space Grotesk';font-size:44px;font-weight:700;letter-spacing:-0.03em;">{{ p.price }}</span>
+              <span style="font-size:14px;color:var(--tx-3);">{{ p.period }}</span>
+            </div>
+            <div style="font-size:12.5px;color:var(--tx-5);margin-bottom:26px;">{{ p.billed }}</div>
+            <a href="#" style="text-decoration:none;text-align:center;font-size:14.5px;font-weight:600;padding:13px;border-radius:11px;margin-bottom:26px;{{ p.btn }}">{{ p.cta }}</a>
+            <div style="display:flex;flex-direction:column;gap:13px;">
+              <sc-for list="{{ p.features }}" as="feat" hint-placeholder-count="5">
+                <div style="display:flex;align-items:flex-start;gap:11px;font-size:14px;color:var(--tx-2);">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--a3)" stroke-width="2.5" style="flex-shrink:0;margin-top:1px;"><path d="M20 6L9 17l-5-5"/></svg>
+                  {{ feat }}
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <!-- COMPARISON TABLE -->
+    <section style="max-width:1000px;margin:0 auto;padding:50px 24px 30px;">
+      <div data-reveal style="text-align:center;margin-bottom:36px;">
+        <h2 style="font-family:'Space Grotesk';font-weight:700;font-size:clamp(26px,3.6vw,38px);letter-spacing:-0.02em;">Compare every feature</h2>
+      </div>
+      <div data-reveal style="border-radius:16px;border:1px solid rgba(var(--fg),0.08);overflow:hidden;">
+        <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;background:rgba(var(--fg),0.04);border-bottom:1px solid rgba(var(--fg),0.08);">
+          <div style="padding:18px 22px;font-size:13px;font-weight:600;color:var(--tx-3);">Feature</div>
+          <div style="padding:18px 12px;font-size:13.5px;font-weight:600;text-align:center;">Starter</div>
+          <div style="padding:18px 12px;font-size:13.5px;font-weight:600;text-align:center;color:#c9beff;">Pro</div>
+          <div style="padding:18px 12px;font-size:13.5px;font-weight:600;text-align:center;">Enterprise</div>
+        </div>
+        <sc-for list="{{ comparison }}" as="c" hint-placeholder-count="8">
+          <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;border-bottom:1px solid rgba(var(--fg),0.05);" data-html="{{ c }}"></div>
+        </sc-for>
+      </div>
+    </section>
+
+    <!-- PRICING FAQ -->
+    <section style="max-width:800px;margin:0 auto;padding:40px 24px 80px;">
+      <div data-reveal style="text-align:center;margin-bottom:36px;">
+        <h2 style="font-family:'Space Grotesk';font-weight:700;font-size:clamp(26px,3.6vw,38px);letter-spacing:-0.02em;">Billing questions</h2>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <sc-for list="{{ faqs }}" as="fq" hint-placeholder-count="5">
+          <div data-reveal style="border-radius:14px;background:rgba(var(--fg),0.025);border:1px solid rgba(var(--fg),0.08);overflow:hidden;">
+            <button onClick="{{ fq.toggle }}" style="width:100%;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 24px;background:none;border:none;cursor:pointer;text-align:left;color:var(--tx-0);font-size:16px;font-weight:500;font-family:'Sora';">
+              {{ fq.q }}
+              <span style="flex-shrink:0;color:var(--a2);transform:{{ fq.rot }};transition:transform .25s;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></span>
+            </button>
+            <sc-if value="{{ fq.open }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:0 24px 22px;font-size:14.5px;line-height:1.65;color:#a6a6b6;">{{ fq.a }}</div>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <div data-html="{{ ctaBlock }}"></div>
+  </main>
+  </sc-if>
+
+  <!-- ============================================================ -->
+  <!-- ===================== ABOUT PAGE =========================== -->
+  <!-- ============================================================ -->
+  <sc-if value="{{ isAbout }}" hint-placeholder-val="{{ false }}">
+  <main style="position:relative;z-index:1;">
+    <section style="max-width:860px;margin:0 auto;padding:80px 24px 20px;text-align:center;">
+      <h1 data-reveal style="font-family:'Space Grotesk';font-weight:700;font-size:clamp(38px,5.4vw,64px);line-height:1.05;letter-spacing:-0.03em;margin-bottom:22px;">We're building the<br><span style="background:linear-gradient(120deg,var(--a2),var(--a3));-webkit-background-clip:text;background-clip:text;color:transparent;">last workspace you'll need</span></h1>
+      <p data-reveal style="max-width:600px;margin:0 auto;font-size:18px;line-height:1.65;color:#a6a6b6;">{{ brandName }} started with a simple belief: people should spend their time on the work that matters, and let intelligent software handle the rest.</p>
+    </section>
+
+    <section style="max-width:1100px;margin:0 auto;padding:40px 24px;">
+      <div data-reveal style="border-radius:20px;border:1px solid rgba(var(--fg),0.09);background:linear-gradient(135deg,rgba(var(--a1rgb),0.1),rgba(var(--a3rgb),0.05));padding:48px 40px;display:grid;grid-template-columns:repeat(4,1fr);gap:28px;text-align:center;" class="nx-statgrid">
+        <sc-for list="{{ aboutStats }}" as="st" hint-placeholder-count="4">
+          <div>
+            <div style="font-family:'Space Grotesk';font-size:clamp(30px,4vw,46px);font-weight:700;letter-spacing:-0.03em;background:linear-gradient(120deg,#c9beff,var(--a3));-webkit-background-clip:text;background-clip:text;color:transparent;"><span data-count="{{ st.value }}">0</span>{{ st.suffix }}</div>
+            <div style="font-size:14px;color:var(--tx-3);margin-top:8px;">{{ st.label }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <!-- VALUES -->
+    <section style="max-width:1140px;margin:0 auto;padding:50px 24px;">
+      <div data-reveal style="text-align:center;max-width:600px;margin:0 auto 44px;">
+        <span style="font-size:13px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--a2);">Our values</span>
+        <h2 style="font-family:'Space Grotesk';font-weight:700;font-size:clamp(28px,4vw,42px);letter-spacing:-0.02em;margin-top:14px;">What we stand for</h2>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:18px;" class="nx-3grid">
+        <sc-for list="{{ values }}" as="v" hint-placeholder-count="3">
+          <div data-reveal style="padding:30px;border-radius:16px;background:rgba(var(--fg),0.025);border:1px solid rgba(var(--fg),0.08);">
+            <div style="width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,rgba(var(--a1rgb),0.25),rgba(var(--a3rgb),0.18));border:1px solid rgba(var(--fg),0.1);display:flex;align-items:center;justify-content:center;color:#c9beff;margin-bottom:18px;" data-html="{{ v.icon }}"></div>
+            <h3 style="font-family:'Space Grotesk';font-size:19px;font-weight:600;margin-bottom:10px;">{{ v.title }}</h3>
+            <p style="font-size:14.5px;line-height:1.62;color:var(--tx-3);">{{ v.body }}</p>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <!-- TIMELINE -->
+    <section style="max-width:760px;margin:0 auto;padding:40px 24px;">
+      <div data-reveal style="text-align:center;margin-bottom:44px;">
+        <h2 style="font-family:'Space Grotesk';font-weight:700;font-size:clamp(26px,3.6vw,38px);letter-spacing:-0.02em;">Our journey</h2>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:0;">
+        <sc-for list="{{ timeline }}" as="t" hint-placeholder-count="4">
+          <div data-reveal style="display:grid;grid-template-columns:90px 1fr;gap:24px;">
+            <div style="font-family:'Space Grotesk';font-size:18px;font-weight:700;color:var(--a2);text-align:right;padding-top:2px;">{{ t.year }}</div>
+            <div style="border-left:2px solid rgba(var(--a1rgb),0.3);padding:0 0 34px 24px;position:relative;">
+              <span style="position:absolute;left:-7px;top:4px;width:12px;height:12px;border-radius:50%;background:linear-gradient(135deg,var(--a2),var(--a3));box-shadow:0 0 0 4px rgba(var(--a1rgb),0.15);"></span>
+              <h3 style="font-size:16px;font-weight:600;margin-bottom:6px;">{{ t.title }}</h3>
+              <p style="font-size:14px;line-height:1.6;color:var(--tx-3);">{{ t.body }}</p>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <!-- TEAM -->
+    <section style="max-width:1140px;margin:0 auto;padding:40px 24px 60px;">
+      <div data-reveal style="text-align:center;max-width:600px;margin:0 auto 44px;">
+        <span style="font-size:13px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--a3);">Team</span>
+        <h2 style="font-family:'Space Grotesk';font-weight:700;font-size:clamp(28px,4vw,42px);letter-spacing:-0.02em;margin-top:14px;">The people behind {{ brandName }}</h2>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:18px;" class="nx-4grid">
+        <sc-for list="{{ team }}" as="m" hint-placeholder-count="4">
+          <div data-reveal class="nx-card" style="padding:26px;border-radius:16px;background:rgba(var(--fg),0.025);border:1px solid rgba(var(--fg),0.08);text-align:center;" style-hover="transform:translateY(-4px);border-color:rgba(var(--a1rgb),0.35);">
+            <div style="width:76px;height:76px;border-radius:50%;margin:0 auto 16px;background:{{ m.color }};display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk';font-weight:700;font-size:26px;color:#0a0a12;">{{ m.initials }}</div>
+            <div style="font-weight:600;font-size:16px;margin-bottom:3px;">{{ m.name }}</div>
+            <div style="font-size:13px;color:var(--tx-4);">{{ m.role }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <div data-html="{{ ctaBlock }}"></div>
+  </main>
+  </sc-if>
+
+  <!-- ============================================================ -->
+  <!-- ====================== BLOG PAGE =========================== -->
+  <!-- ============================================================ -->
+  <sc-if value="{{ isBlog }}" hint-placeholder-val="{{ false }}">
+  <main style="position:relative;z-index:1;">
+    <section style="max-width:820px;margin:0 auto;padding:80px 24px 20px;text-align:center;">
+      <h1 data-reveal style="font-family:'Space Grotesk';font-weight:700;font-size:clamp(38px,5.4vw,60px);line-height:1.05;letter-spacing:-0.03em;margin-bottom:20px;">The <span style="background:linear-gradient(120deg,var(--a2),var(--a3));-webkit-background-clip:text;background-clip:text;color:transparent;">{{ brandName }}</span> blog</h1>
+      <p data-reveal style="max-width:520px;margin:0 auto;font-size:18px;line-height:1.6;color:#a6a6b6;">Playbooks, product updates, and ideas on building with AI.</p>
+    </section>
+
+    <!-- FEATURED -->
+    <section style="max-width:1140px;margin:0 auto;padding:36px 24px;">
+      <div data-reveal onClick="{{ goBlogPost }}" class="nx-card" style="border-radius:20px;border:1px solid rgba(var(--fg),0.09);background:rgba(var(--fg),0.02);overflow:hidden;display:grid;grid-template-columns:1.1fr 1fr;gap:0;cursor:pointer;" style-hover="border-color:rgba(var(--a1rgb),0.35);">
+        <div style="min-height:280px;background:linear-gradient(135deg,var(--a1),var(--a3));position:relative;">
+          <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(0,0,0,0.06) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,0,0.06) 1px,transparent 1px);background-size:26px 26px;"></div>
+        </div>
+        <div style="padding:44px 40px;display:flex;flex-direction:column;justify-content:center;">
+          <span style="font-size:12px;font-weight:600;color:var(--a3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:14px;">Featured · Product</span>
+          <h2 style="font-family:'Space Grotesk';font-size:28px;font-weight:600;line-height:1.2;letter-spacing:-0.02em;margin-bottom:14px;">Introducing agentic workflows in {{ brandName }} 3.0</h2>
+          <p style="font-size:15px;line-height:1.65;color:#a6a6b6;margin-bottom:22px;">The biggest release yet — agents that plan, act, and learn across your entire stack. Here's everything that's new and how to get started today.</p>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--a2),var(--a3));display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk';font-weight:700;font-size:12px;color:#0a0a12;">EM</div>
+            <div style="font-size:13px;color:var(--tx-3);">Elena Marsh · Mar 12, 2026</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CATEGORIES -->
+    <section style="max-width:1140px;margin:0 auto;padding:8px 24px 20px;">
+      <div data-reveal style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">
+        <sc-for list="{{ categories }}" as="cat" hint-placeholder-count="5">
+          <span style="font-size:13.5px;font-weight:500;padding:8px 16px;border-radius:100px;border:1px solid {{ cat.border }};background:{{ cat.bg }};color:{{ cat.color }};">{{ cat.name }}</span>
+        </sc-for>
+      </div>
+    </section>
+
+    <!-- POST GRID -->
+    <section style="max-width:1140px;margin:0 auto;padding:24px 24px 40px;">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:22px;" class="nx-3grid">
+        <sc-for list="{{ posts }}" as="post" hint-placeholder-count="6">
+          <div data-reveal onClick="{{ goBlogPost }}" class="nx-card" style="border-radius:16px;border:1px solid rgba(var(--fg),0.08);background:rgba(var(--fg),0.02);overflow:hidden;cursor:pointer;" style-hover="transform:translateY(-4px);border-color:rgba(var(--a1rgb),0.35);">
+            <div style="height:160px;background:{{ post.thumb }};position:relative;">
+              <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(0,0,0,0.08) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,0,0.08) 1px,transparent 1px);background-size:22px 22px;"></div>
+              <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(10,10,18,0.82);" data-html="{{ post.catIconSvg }}"></div>
+            </div>
+            <div style="padding:22px;">
+              <span style="font-size:11.5px;font-weight:600;color:var(--a3);text-transform:uppercase;letter-spacing:0.05em;">{{ post.cat }}</span>
+              <h3 style="font-family:'Space Grotesk';font-size:18px;font-weight:600;line-height:1.3;letter-spacing:-0.01em;margin:10px 0 10px;">{{ post.title }}</h3>
+              <p style="font-size:13.5px;line-height:1.6;color:var(--tx-3);margin-bottom:16px;">{{ post.excerpt }}</p>
+              <div style="font-size:12.5px;color:var(--tx-5);">{{ post.meta }}</div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <!-- NEWSLETTER -->
+    <section style="max-width:900px;margin:0 auto;padding:30px 24px 80px;">
+      <div data-reveal style="border-radius:20px;border:1px solid rgba(var(--fg),0.09);background:linear-gradient(135deg,rgba(var(--a1rgb),0.14),rgba(var(--a3rgb),0.07));padding:48px 40px;text-align:center;">
+        <h2 style="font-family:'Space Grotesk';font-weight:700;font-size:clamp(24px,3.4vw,34px);letter-spacing:-0.02em;margin-bottom:12px;">Get the best of {{ brandName }} in your inbox</h2>
+        <p style="font-size:15px;color:#b8b8c6;margin-bottom:26px;">One thoughtful email a week. No spam, unsubscribe anytime.</p>
+        <div style="display:flex;gap:10px;max-width:440px;margin:0 auto;flex-wrap:wrap;justify-content:center;">
+          <input type="email" placeholder="you@company.com" style="flex:1;min-width:220px;padding:14px 18px;border-radius:11px;background:rgba(0,0,0,0.3);border:1px solid rgba(var(--fg),0.14);color:#fff;font-size:14.5px;outline:none;">
+          <button style="padding:14px 26px;border-radius:11px;border:none;cursor:pointer;font-size:14.5px;font-weight:600;color:#0a0a12;background:linear-gradient(135deg,var(--a2),var(--a3));">Subscribe</button>
+        </div>
+      </div>
+    </section>
+  </main>
+  </sc-if>
+
+  <!-- ============================================================ -->
+  <!-- ==================== CONTACT PAGE ========================== -->
+  <!-- ============================================================ -->
+  <sc-if value="{{ isContact }}" hint-placeholder-val="{{ false }}">
+  <main style="position:relative;z-index:1;">
+    <section style="max-width:820px;margin:0 auto;padding:80px 24px 10px;text-align:center;">
+      <h1 data-reveal style="font-family:'Space Grotesk';font-weight:700;font-size:clamp(38px,5.4vw,60px);line-height:1.05;letter-spacing:-0.03em;margin-bottom:20px;">Let's <span style="background:linear-gradient(120deg,var(--a2),var(--a3));-webkit-background-clip:text;background-clip:text;color:transparent;">talk</span></h1>
+      <p data-reveal style="max-width:520px;margin:0 auto;font-size:18px;line-height:1.6;color:#a6a6b6;">Questions, demos, partnerships — we usually reply within a few hours.</p>
+    </section>
+
+    <section style="max-width:1080px;margin:0 auto;padding:44px 24px 60px;">
+      <div style="display:grid;grid-template-columns:1.3fr 1fr;gap:24px;" class="nx-contgrid">
+        <div data-reveal style="padding:38px 36px;border-radius:20px;background:rgba(var(--fg),0.025);border:1px solid rgba(var(--fg),0.08);">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+            <div>
+              <label style="display:block;font-size:13px;color:var(--tx-3);margin-bottom:8px;">First name</label>
+              <input type="text" placeholder="Jane" style="width:100%;padding:13px 15px;border-radius:11px;background:rgba(0,0,0,0.3);border:1px solid rgba(var(--fg),0.12);color:#fff;font-size:14.5px;outline:none;" style-focus="border-color:rgba(var(--a1rgb),0.6);">
+            </div>
+            <div>
+              <label style="display:block;font-size:13px;color:var(--tx-3);margin-bottom:8px;">Last name</label>
+              <input type="text" placeholder="Doe" style="width:100%;padding:13px 15px;border-radius:11px;background:rgba(0,0,0,0.3);border:1px solid rgba(var(--fg),0.12);color:#fff;font-size:14.5px;outline:none;" style-focus="border-color:rgba(var(--a1rgb),0.6);">
+            </div>
+          </div>
+          <div style="margin-bottom:16px;">
+            <label style="display:block;font-size:13px;color:var(--tx-3);margin-bottom:8px;">Work email</label>
+            <input type="email" placeholder="jane@company.com" style="width:100%;padding:13px 15px;border-radius:11px;background:rgba(0,0,0,0.3);border:1px solid rgba(var(--fg),0.12);color:#fff;font-size:14.5px;outline:none;" style-focus="border-color:rgba(var(--a1rgb),0.6);">
+          </div>
+          <div style="margin-bottom:16px;">
+            <label style="display:block;font-size:13px;color:var(--tx-3);margin-bottom:8px;">Company</label>
+            <input type="text" placeholder="Acme Inc." style="width:100%;padding:13px 15px;border-radius:11px;background:rgba(0,0,0,0.3);border:1px solid rgba(var(--fg),0.12);color:#fff;font-size:14.5px;outline:none;" style-focus="border-color:rgba(var(--a1rgb),0.6);">
+          </div>
+          <div style="margin-bottom:22px;">
+            <label style="display:block;font-size:13px;color:var(--tx-3);margin-bottom:8px;">How can we help?</label>
+            <textarea rows="4" placeholder="Tell us a bit about what you're looking for..." style="width:100%;padding:13px 15px;border-radius:11px;background:rgba(0,0,0,0.3);border:1px solid rgba(var(--fg),0.12);color:#fff;font-size:14.5px;outline:none;resize:vertical;font-family:'Sora';" style-focus="border-color:rgba(var(--a1rgb),0.6);"></textarea>
+          </div>
+          <button style="width:100%;padding:15px;border-radius:12px;border:none;cursor:pointer;font-size:15px;font-weight:600;color:#0a0a12;background:linear-gradient(135deg,var(--a2),var(--a3));box-shadow:0 8px 24px rgba(var(--a1rgb),0.35);">Send message</button>
+        </div>
+        <div data-reveal style="display:flex;flex-direction:column;gap:16px;">
+          <sc-for list="{{ contactCards }}" as="cc" hint-placeholder-count="3">
+            <div style="padding:26px;border-radius:16px;background:rgba(var(--fg),0.025);border:1px solid rgba(var(--fg),0.08);">
+              <div style="width:42px;height:42px;border-radius:11px;background:linear-gradient(135deg,rgba(var(--a1rgb),0.25),rgba(var(--a3rgb),0.18));border:1px solid rgba(var(--fg),0.1);display:flex;align-items:center;justify-content:center;color:#c9beff;margin-bottom:14px;" data-html="{{ cc.icon }}"></div>
+              <div style="font-family:'Space Grotesk';font-size:16px;font-weight:600;margin-bottom:5px;">{{ cc.title }}</div>
+              <div style="font-size:14px;color:var(--tx-3);line-height:1.5;">{{ cc.body }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+  </main>
+  </sc-if>
+
+  <!-- ============================================================ -->
+  <!-- ==================== MARKETING PAGES ======================= -->
+  <!-- ============================================================ -->
+  <sc-if value="{{ isServices }}" hint-placeholder-val="{{ false }}">
+    <div data-html="{{ servicesPage }}"></div>
+  </sc-if>
+  <sc-if value="{{ isCareers }}" hint-placeholder-val="{{ false }}">
+    <div data-html="{{ careersPage }}"></div>
+  </sc-if>
+  <sc-if value="{{ isTeam }}" hint-placeholder-val="{{ false }}">
+    <div data-html="{{ teamPage }}"></div>
+  </sc-if>
+  <sc-if value="{{ isBlogPost }}" hint-placeholder-val="{{ false }}">
+    <div data-html="{{ blogPost }}"></div>
+  </sc-if>
+  <sc-if value="{{ isFaq }}" hint-placeholder-val="{{ false }}">
+    <div data-html="{{ faqPage }}"></div>
+  </sc-if>
+  <sc-if value="{{ isLegal }}" hint-placeholder-val="{{ false }}">
+    <div data-html="{{ legalPage }}"></div>
+  </sc-if>
+
+  <!-- ============================================================ -->
+  <!-- ====================== 404 PAGE ============================ -->
+  <!-- ============================================================ -->
+  <sc-if value="{{ is404 }}" hint-placeholder-val="{{ false }}">
+  <main style="position:relative;z-index:1;min-height:70vh;display:flex;align-items:center;justify-content:center;">
+    <div data-reveal style="text-align:center;padding:80px 24px;">
+      <div style="font-family:'Space Grotesk';font-weight:700;font-size:clamp(90px,18vw,180px);line-height:1;letter-spacing:-0.04em;background:linear-gradient(120deg,var(--a2),var(--a3));-webkit-background-clip:text;background-clip:text;color:transparent;">404</div>
+      <h1 style="font-family:'Space Grotesk';font-size:clamp(24px,3.4vw,32px);font-weight:600;margin:10px 0 14px;">This page went off-script</h1>
+      <p style="font-size:16px;color:#a6a6b6;max-width:400px;margin:0 auto 30px;line-height:1.6;">The page you're looking for doesn't exist or has been moved. Let's get you back on track.</p>
+      <a href="#" onClick="{{ goHome }}" style="text-decoration:none;font-size:15px;font-weight:600;color:#0a0a12;background:linear-gradient(135deg,var(--a2),var(--a3));padding:14px 28px;border-radius:12px;box-shadow:0 10px 30px rgba(var(--a1rgb),0.4);">Back to home</a>
+    </div>
+  </main>
+  </sc-if>
+
+  <!-- ===== FOOTER ===== -->
+  <footer style="position:relative;z-index:1;border-top:1px solid rgba(var(--fg),0.07);">
+    <div style="max-width:1240px;margin:0 auto;padding:56px 24px 40px;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px;" class="nx-footgrid">
+      <div>
+        <a href="#" onClick="{{ goHome }}" style="display:flex;align-items:center;gap:11px;text-decoration:none;color:var(--tx-hi);margin-bottom:16px;">
+          <span style="width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--a1),var(--a3));display:flex;align-items:center;justify-content:center;font-weight:700;font-family:'Space Grotesk';">N</span>
+          <span style="font-family:'Space Grotesk';font-weight:600;font-size:18px;">{{ brandName }}</span>
+        </a>
+        <p style="font-size:14px;color:var(--tx-4);line-height:1.6;max-width:280px;">The AI workspace that thinks alongside your team. Automate the busywork and ship faster.</p>
+      </div>
+      <div>
+        <div style="font-size:13px;font-weight:600;color:var(--tx-0);margin-bottom:16px;">Product</div>
+        <div style="display:flex;flex-direction:column;gap:11px;">
+          <a href="#" onClick="{{ goFeatures }}" class="nx-link" style="font-size:14px;color:var(--tx-4);text-decoration:none;">Features</a>
+          <a href="#" onClick="{{ goPricing }}" class="nx-link" style="font-size:14px;color:var(--tx-4);text-decoration:none;">Pricing</a>
+          <a href="#" onClick="{{ goServices }}" class="nx-link" style="font-size:14px;color:var(--tx-4);text-decoration:none;">Services</a>
+          <a href="#" class="nx-link" style="font-size:14px;color:var(--tx-4);text-decoration:none;">Changelog</a>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:13px;font-weight:600;color:var(--tx-0);margin-bottom:16px;">Company</div>
+        <div style="display:flex;flex-direction:column;gap:11px;">
+          <a href="#" onClick="{{ goAbout }}" class="nx-link" style="font-size:14px;color:var(--tx-4);text-decoration:none;">About</a>
+          <a href="#" onClick="{{ goBlog }}" class="nx-link" style="font-size:14px;color:var(--tx-4);text-decoration:none;">Blog</a>
+          <a href="#" onClick="{{ goCareers }}" class="nx-link" style="font-size:14px;color:var(--tx-4);text-decoration:none;">Careers</a>
+          <a href="#" onClick="{{ goTeam }}" class="nx-link" style="font-size:14px;color:var(--tx-4);text-decoration:none;">Team</a>
+          <a href="#" onClick="{{ goContact }}" class="nx-link" style="font-size:14px;color:var(--tx-4);text-decoration:none;">Contact</a>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:13px;font-weight:600;color:var(--tx-0);margin-bottom:16px;">Legal</div>
+        <div style="display:flex;flex-direction:column;gap:11px;">
+          <a href="#" onClick="{{ goFaq }}" class="nx-link" style="font-size:14px;color:var(--tx-4);text-decoration:none;">FAQ</a>
+          <a href="#" class="nx-link" style="font-size:14px;color:var(--tx-4);text-decoration:none;">Privacy</a>
+          <a href="#" onClick="{{ goLegal }}" class="nx-link" style="font-size:14px;color:var(--tx-4);text-decoration:none;">Terms</a>
+          <a href="#" class="nx-link" style="font-size:14px;color:var(--tx-4);text-decoration:none;">Security</a>
+        </div>
+      </div>
+    </div>
+    <div style="border-top:1px solid rgba(var(--fg),0.06);">
+      <div style="max-width:1240px;margin:0 auto;padding:22px 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+        <span style="font-size:13px;color:var(--tx-5);">© 2026 {{ brandName }}, Inc. All rights reserved.</span>
+        <div style="display:flex;gap:16px;">
+          <a href="#" aria-label="X" class="nx-link" style="color:var(--tx-5);"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.9 2h3.3l-7.2 8.2L23.5 22h-6.6l-5.2-6.8L5.8 22H2.5l7.7-8.8L1.6 2h6.8l4.7 6.2zm-1.2 18h1.8L7.1 3.9H5.2z"/></svg></a>
+          <a href="#" aria-label="LinkedIn" class="nx-link" style="color:var(--tx-5);"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5A2.5 2.5 0 1 1 0 3.5a2.5 2.5 0 0 1 4.98 0zM.4 8.1h4.2V24H.4zM8.3 8.1h4v2.2h.05c.56-1 1.9-2.2 3.95-2.2 4.2 0 5 2.8 5 6.4V24h-4.2v-6.9c0-1.65-.03-3.8-2.3-3.8-2.3 0-2.65 1.8-2.65 3.66V24H8.3z"/></svg></a>
+          <a href="#" aria-label="GitHub" class="nx-link" style="color:var(--tx-5);"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5A11.5 11.5 0 0 0 .5 12a11.5 11.5 0 0 0 7.86 10.92c.58.1.79-.25.79-.55v-2c-3.2.7-3.88-1.37-3.88-1.37-.53-1.34-1.3-1.7-1.3-1.7-1.05-.72.08-.7.08-.7 1.17.08 1.78 1.2 1.78 1.2 1.04 1.78 2.73 1.27 3.4.97.1-.75.4-1.27.73-1.56-2.56-.3-5.26-1.28-5.26-5.7 0-1.26.45-2.29 1.2-3.1-.12-.3-.52-1.48.11-3.08 0 0 .98-.31 3.2 1.18a11.1 11.1 0 0 1 5.83 0c2.22-1.5 3.2-1.18 3.2-1.18.63 1.6.23 2.78.11 3.08.75.81 1.2 1.84 1.2 3.1 0 4.43-2.7 5.4-5.27 5.69.41.36.78 1.06.78 2.14v3.17c0 .3.2.66.8.55A11.5 11.5 0 0 0 23.5 12 11.5 11.5 0 0 0 12 .5z"/></svg></a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <style>
+    @media (max-width: 960px) {
+      .nx-desknav { display: none !important; }
+      .nx-mobtog { display: flex !important; }
+      .nx-bento > div { grid-column: span 6 !important; }
+      .nx-3grid { grid-template-columns: 1fr !important; }
+      .nx-4grid { grid-template-columns: 1fr 1fr !important; }
+      .nx-statgrid { grid-template-columns: repeat(2,1fr) !important; }
+      .nx-footgrid { grid-template-columns: 1fr 1fr !important; }
+      .nx-intgrid { grid-template-columns: repeat(3,1fr) !important; }
+      .nx-wall { columns: 1 !important; }
+      .nx-tourgrid { grid-template-columns: 1fr !important; }
+      .nx-mockgrid { grid-template-columns: 1fr !important; }
+      .nx-mocksb { display: none !important; }
+      .nx-frow { grid-template-columns: 1fr !important; }
+      .nx-frow > div { order: 0 !important; }
+      .nx-contgrid { grid-template-columns: 1fr !important; }
+    }
+  </style>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:900},&quot;brandName&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Nexus&quot;}}">
+class Component extends DCLogic {
+  state = { page: 'home', menuOpen: false, billingYearly: false, tab: 0, faqOpen: 0 };
+
+  _readPref(key, fallback) { try { return localStorage.getItem(key) || fallback; } catch(e){ return fallback; } }
+  theme = this._readPref('nx-theme', 'dark');
+  accent = this._readPref('nx-accent', 'violet');
+  toggleTheme = () => { this.theme = this.theme === 'dark' ? 'light' : 'dark'; try { localStorage.setItem('nx-theme', this.theme); } catch(e){} this.forceUpdate(); };
+  setAccent = (a) => () => { this.accent = a; try { localStorage.setItem('nx-accent', a); } catch(e){} this.forceUpdate(); };
+
+  nav = (page) => (e) => { if (e) e.preventDefault(); this.setState({ page, menuOpen: false }); try { window.scrollTo(0,0); } catch(_){} };
+  goHome = this.nav('home');
+  goFeatures = this.nav('features');
+  goPricing = this.nav('pricing');
+  goAbout = this.nav('about');
+  goBlog = this.nav('blog');
+  goContact = this.nav('contact');
+  goServices = this.nav('services');
+  goCareers = this.nav('careers');
+  goTeam = this.nav('team');
+  goBlogPost = this.nav('blog-post');
+  goFaq = this.nav('faq');
+  goLegal = this.nav('legal');
+  _delegNav = (e) => { const t = e.target && e.target.closest && e.target.closest('[data-nav]'); if (t) { e.preventDefault(); this.nav(t.getAttribute('data-nav'))(e); } };
+  toggleMenu = () => this.setState(s => ({ menuOpen: !s.menuOpen }));
+  toggleBilling = () => this.setState(s => ({ billingYearly: !s.billingYearly }));
+  selectTab = (i) => () => this.setState({ tab: i });
+  toggleFaq = (i) => () => this.setState(s => ({ faqOpen: s.faqOpen === i ? -1 : i }));
+
+  ic(p, sz) { return '<svg width="' + (sz||22) + '" height="' + (sz||22) + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + p + '</svg>'; }
+
+  componentDidMount() { this.runCounts(); this._initHtmlObserver(); this._applyHtml(); this._initReveal(); document.addEventListener('click', this._delegNav); }
+  componentDidUpdate(pp, ps) { if (ps.page !== this.state.page) this.runCounts(); this._applyHtml(); this._scanReveal(); }
+  _initReveal() {
+    var self = this;
+    this._revealAll = function(){
+      try {
+        var vh = window.innerHeight || document.documentElement.clientHeight || 800;
+        document.querySelectorAll('[data-reveal]:not([data-show])').forEach(function(el){
+          var r = el.getBoundingClientRect();
+          if (r.top < vh * 0.94 && r.bottom > -60) el.setAttribute('data-show', '');
+        });
+      } catch(e){}
+    };
+    this._revealAll();
+    window.addEventListener('scroll', this._revealAll, { passive: true, capture: true });
+    document.addEventListener('scroll', this._revealAll, { passive: true, capture: true });
+    window.addEventListener('resize', this._revealAll, { passive: true });
+    [80, 250, 600, 1200].forEach(function(t){ setTimeout(self._revealAll, t); });
+    setTimeout(function(){ try { document.querySelectorAll('[data-reveal]:not([data-show])').forEach(function(el){ el.setAttribute('data-show', ''); }); } catch(_){} }, 8000);
+  }
+  _scanReveal() { if (this._revealAll) requestAnimationFrame(this._revealAll); }
+  componentWillUnmount() { try { window.removeEventListener('scroll', this._revealAll, true); document.removeEventListener('scroll', this._revealAll, true); window.removeEventListener('resize', this._revealAll); document.removeEventListener('click', this._delegNav); this._htmlObs && this._htmlObs.disconnect(); } catch(e){} }
+  _applyHtml() {
+    try { document.querySelectorAll('[data-html]').forEach(el => { const v = el.getAttribute('data-html') || ''; if (v && (el.__lastHtml !== v || el.childNodes.length === 0)) { el.innerHTML = v; el.__lastHtml = v; } }); } catch(e){}
+  }
+  _initHtmlObserver() {
+    try {
+      this._htmlObs = new MutationObserver(() => { clearTimeout(this._htmlT); this._htmlT = setTimeout(() => this._applyHtml(), 0); });
+      this._htmlObs.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['data-html'] });
+    } catch(e){}
+  }
+  runCounts() {
+    clearTimeout(this._ct);
+    this._ct = setTimeout(() => {
+      try {
+        document.querySelectorAll('[data-count]').forEach(el => {
+          const target = parseFloat(el.getAttribute('data-count')) || 0;
+          const dec = target % 1 !== 0;
+          const dur = 1300, start = performance.now();
+          const step = (t) => {
+            const p = Math.min(1, (t - start) / dur);
+            const v = target * (1 - Math.pow(1 - p, 3));
+            el.textContent = dec ? v.toFixed(1) : Math.round(v).toLocaleString();
+            if (p < 1) requestAnimationFrame(step);
+          };
+          requestAnimationFrame(step);
+        });
+      } catch(_){}
+    }, 120);
+  }
+
+  // ---------- MARKETING PAGES (Batch 6) ----------
+  _mg(i) { return ['linear-gradient(135deg,var(--a1),var(--a3))', 'linear-gradient(135deg,#f472b6,#a855f7)', 'linear-gradient(135deg,#34d399,#22d3ee)', 'linear-gradient(135deg,#fbbf24,#f97316)', 'linear-gradient(135deg,#60a5fa,#818cf8)', 'linear-gradient(135deg,#f87171,#fb923c)'][i % 6]; }
+  get _mCard() { return 'border:1px solid rgba(var(--fg),0.09);background:rgba(var(--fg),0.025);border-radius:18px;'; }
+  _mHero(eyebrow, titleHtml, sub, maxw) { return '<section style="max-width:' + (maxw || 820) + 'px;margin:0 auto;padding:80px 24px 24px;text-align:center;"><div style="font-size:12.5px;font-weight:600;letter-spacing:0.16em;color:var(--a2);margin-bottom:16px;">' + eyebrow + '</div><h1 style="font-family:Space Grotesk;font-weight:700;font-size:clamp(36px,5.2vw,56px);line-height:1.06;letter-spacing:-0.03em;margin-bottom:20px;">' + titleHtml + '</h1><p style="max-width:560px;margin:0 auto;font-size:18px;line-height:1.6;color:var(--tx-3);">' + sub + '</p></section>'; }
+  _gr (w) { return '<span style="background:linear-gradient(120deg,var(--a2),var(--a3));-webkit-background-clip:text;background-clip:text;color:transparent;">' + w + '</span>'; }
+
+  servicesPage(brand) {
+    const svc = [
+      ['Workflow automation', '<path d="M12 3l1.9 5.8L20 10l-6.1 1.2L12 17l-1.9-5.8L4 10l6.1-1.2z"/>', 'Turn repetitive, multi-step processes into agents that run themselves — triggered by any event in your stack.'],
+      ['Live analytics', '<path d="M3 3v18h18"/><path d="M7 13l3-3 3 2 4-5"/>', 'Real-time dashboards and anomaly alerts that surface what changed, why, and what to do next.'],
+      ['Data integration', '<path d="M10 13a5 5 0 0 0 7 0l2-2a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-2 2a5 5 0 0 0 7 7l1-1"/>', 'Connect 200+ tools in minutes. Sync records both ways with no code and no brittle scripts.'],
+      ['AI copilots', '<path d="M12 8V4H8M4 8h4M20 8h-4M4 16h4M20 16h-4"/><rect x="8" y="8" width="8" height="8" rx="2"/>', 'Custom assistants trained on your docs and data — grounded, cited, and safe by default.'],
+      ['Security & SSO', '<rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>', 'SOC 2 Type II, SAML SSO, SCIM provisioning and granular roles for the whole org.'],
+      ['Onboarding & support', '<path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/>', 'White-glove migration and a dedicated success manager on every business plan.'],
+    ];
+    const scard = (s, i) => '<div class="nx-card" data-reveal style="' + this._mCard + 'padding:30px 26px;" style-hover="transform:translateY(-4px);border-color:rgba(var(--a1rgb),0.35);"><div style="width:52px;height:52px;border-radius:14px;background:rgba(var(--a1rgb),0.12);display:flex;align-items:center;justify-content:center;color:var(--a2);margin-bottom:18px;">' + this.ic(s[1], 24) + '</div><div style="font-family:Space Grotesk;font-size:18px;font-weight:600;margin-bottom:10px;">' + s[0] + '</div><p style="font-size:14px;line-height:1.65;color:var(--tx-3);">' + s[2] + '</p></div>';
+    const steps = [['01', 'Discover', 'We map your workflows and pick the highest-leverage automations first.'], ['02', 'Build', 'Our team configures agents, integrations and dashboards in a shared workspace.'], ['03', 'Launch', 'Roll out to your team with training, playbooks and guardrails in place.'], ['04', 'Scale', 'Measure impact, expand coverage, and compound the time you get back.']];
+    const step = (s) => '<div data-reveal style="flex:1;min-width:200px;"><div style="font-family:Space Grotesk;font-size:15px;font-weight:700;color:#0a0a12;background:linear-gradient(135deg,var(--a2),var(--a3));width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:14px;">' + s[0] + '</div><div style="font-family:Space Grotesk;font-size:16px;font-weight:600;margin-bottom:8px;">' + s[1] + '</div><p style="font-size:13.5px;line-height:1.6;color:var(--tx-3);">' + s[2] + '</p></div>';
+    return '<main style="position:relative;z-index:1;">'
+      + this._mHero('WHAT WE DO', 'Services that put your work on ' + this._gr('autopilot'), 'From automation to analytics, we help teams ship faster with AI woven through every workflow.')
+      + '<section style="max-width:1140px;margin:0 auto;padding:36px 24px;"><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:22px;" class="nx-3grid">' + svc.map(scard).join('') + '</div></section>'
+      + '<section style="max-width:1140px;margin:0 auto;padding:30px 24px 20px;"><div data-reveal style="' + this._mCard + 'padding:44px 40px;"><div style="text-align:center;margin-bottom:34px;"><div style="font-size:12.5px;font-weight:600;letter-spacing:0.16em;color:var(--a2);margin-bottom:12px;">HOW IT WORKS</div><h2 style="font-family:Space Grotesk;font-weight:700;font-size:clamp(26px,3.6vw,38px);letter-spacing:-0.03em;">A simple path to shipping</h2></div><div style="display:flex;gap:30px;flex-wrap:wrap;">' + steps.map(step).join('') + '</div></div></section>'
+      + this.ctaBlockHTML(brand) + '</main>';
+  }
+
+  careersPage(brand) {
+    const perks = [
+      ['Remote-first', '<circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20"/>', 'Work from anywhere. We\u2019ve been distributed since day one.'],
+      ['Equity for all', '<path d="M12 2l2.4 5 5.6.8-4 3.9 1 5.5L12 14.6 7 17.2l1-5.5-4-3.9 5.6-.8z"/>', 'Meaningful ownership in what you help build.'],
+      ['Health & wellness', '<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/>', 'Top-tier medical, dental and a monthly wellness stipend.'],
+      ['Learning budget', '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>', '$2,000/yr for courses, books and conferences.'],
+      ['Flexible time off', '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18M8 2v4M16 2v4"/>', 'Take the time you need — we mean it.'],
+      ['Home office', '<rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>', 'A budget to build the workspace that works for you.'],
+    ];
+    const roles = [
+      ['Senior Frontend Engineer', 'Engineering', 'Remote', 'Full-time'], ['Product Designer', 'Design', 'Remote', 'Full-time'], ['Developer Advocate', 'Marketing', 'Remote', 'Full-time'], ['Account Executive', 'Sales', 'New York', 'Full-time'], ['ML Engineer', 'Engineering', 'Remote', 'Full-time'], ['Customer Success Manager', 'Support', 'Remote', 'Full-time'],
+    ];
+    const pcard = (p) => '<div class="nx-card" data-reveal style="' + this._mCard + 'padding:26px 24px;" style-hover="border-color:rgba(var(--a1rgb),0.35);"><div style="width:46px;height:46px;border-radius:12px;background:rgba(var(--a1rgb),0.12);display:flex;align-items:center;justify-content:center;color:var(--a2);margin-bottom:16px;">' + this.ic(p[1], 22) + '</div><div style="font-family:Space Grotesk;font-size:16px;font-weight:600;margin-bottom:8px;">' + p[0] + '</div><p style="font-size:13.5px;line-height:1.6;color:var(--tx-3);">' + p[2] + '</p></div>';
+    const role = (r) => '<div class="nx-card" data-reveal style="' + this._mCard + 'padding:22px 26px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;" style-hover="border-color:rgba(var(--a1rgb),0.35);"><div><div style="font-family:Space Grotesk;font-size:17px;font-weight:600;margin-bottom:6px;">' + r[0] + '</div><div style="display:flex;gap:8px;flex-wrap:wrap;">' + [r[1], r[2], r[3]].map(t => '<span style="font-size:12px;font-weight:500;padding:4px 11px;border-radius:100px;background:rgba(var(--fg),0.05);border:1px solid rgba(var(--fg),0.1);color:var(--tx-3);">' + t + '</span>').join('') + '</div></div><span style="font-size:14px;font-weight:600;color:#0a0a12;background:linear-gradient(135deg,var(--a2),var(--a3));padding:11px 22px;border-radius:10px;cursor:pointer;">Apply →</span></div>';
+    return '<main style="position:relative;z-index:1;">'
+      + this._mHero('CAREERS', 'Build the future of ' + this._gr('work'), 'We\u2019re a small, senior team shipping fast and having fun doing it. Come help us get there.')
+      + '<section style="max-width:1140px;margin:0 auto;padding:24px 24px;"><div style="text-align:center;margin-bottom:30px;"><h2 style="font-family:Space Grotesk;font-weight:700;font-size:clamp(24px,3.4vw,34px);letter-spacing:-0.02em;">Why you\u2019ll love it here</h2></div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;" class="nx-3grid">' + perks.map(pcard).join('') + '</div></section>'
+      + '<section style="max-width:900px;margin:0 auto;padding:40px 24px;"><div style="text-align:center;margin-bottom:28px;"><div style="font-size:12.5px;font-weight:600;letter-spacing:0.16em;color:var(--a2);margin-bottom:12px;">OPEN ROLES</div><h2 style="font-family:Space Grotesk;font-weight:700;font-size:clamp(24px,3.4vw,34px);letter-spacing:-0.02em;">6 positions open</h2></div><div style="display:flex;flex-direction:column;gap:14px;">' + roles.map(role).join('') + '</div></section>'
+      + this.ctaBlockHTML(brand) + '</main>';
+  }
+
+  teamPage(brand) {
+    const people = [
+      ['Elena Marsh', 'Co-founder & CEO', 'EM'], ['David Okonkwo', 'Co-founder & CTO', 'DO'], ['Priya Patel', 'VP Engineering', 'PP'], ['Leo Fischer', 'VP Product', 'LF'], ['Mina Cho', 'Head of Design', 'MC'], ['Raj Patel', 'Head of AI', 'RP'], ['Sara Malik', 'Head of Marketing', 'SM'], ['Ben Wolfe', 'Head of Sales', 'BW']];
+    const person = (p, i) => '<div class="nx-card" data-reveal style="' + this._mCard + 'padding:26px;text-align:center;" style-hover="transform:translateY(-4px);border-color:rgba(var(--a1rgb),0.35);"><div style="width:88px;height:88px;border-radius:22px;background:' + this._mg(i) + ';margin:0 auto 16px;display:flex;align-items:center;justify-content:center;font-family:Space Grotesk;font-weight:700;font-size:30px;color:#0a0a12;">' + p[2] + '</div><div style="font-family:Space Grotesk;font-size:16px;font-weight:600;">' + p[0] + '</div><div style="font-size:13px;color:var(--tx-4);margin-top:4px;">' + p[1] + '</div></div>';
+    const values = [['Ship to learn', 'We\u2019d rather ship, measure, and iterate than debate in the abstract.'], ['Default to trust', 'Autonomy and ownership over process and permission.'], ['Craft matters', 'The details are the product. We sweat them.'], ['Customer-obsessed', 'We start from the problem and work backward.']];
+    const val = (v, i) => '<div data-reveal style="' + this._mCard + 'padding:26px 24px;"><div style="font-family:Space Grotesk;font-size:16px;font-weight:600;margin-bottom:8px;color:var(--a2);">' + v[0] + '</div><p style="font-size:14px;line-height:1.65;color:var(--tx-3);">' + v[1] + '</p></div>';
+    return '<main style="position:relative;z-index:1;">'
+      + this._mHero('OUR TEAM', 'The people behind ' + this._gr(brand), 'A senior, distributed team from across product, design and AI — united by a love of good tools.')
+      + '<section style="max-width:1140px;margin:0 auto;padding:36px 24px;"><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px;" class="nx-4grid">' + people.map(person).join('') + '</div></section>'
+      + '<section style="max-width:1140px;margin:0 auto;padding:30px 24px 20px;"><div style="text-align:center;margin-bottom:28px;"><div style="font-size:12.5px;font-weight:600;letter-spacing:0.16em;color:var(--a2);margin-bottom:12px;">WHAT WE VALUE</div><h2 style="font-family:Space Grotesk;font-weight:700;font-size:clamp(24px,3.4vw,34px);letter-spacing:-0.02em;">How we work</h2></div><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:20px;" class="nx-3grid">' + values.map(val).join('') + '</div></section>'
+      + this.ctaBlockHTML(brand) + '</main>';
+  }
+
+  blogPost(brand) {
+    const p = (t) => '<p style="font-size:16.5px;line-height:1.75;color:var(--tx-2);margin-bottom:22px;">' + t + '</p>';
+    const h2 = (t) => '<h2 style="font-family:Space Grotesk;font-size:24px;font-weight:600;letter-spacing:-0.02em;margin:38px 0 16px;">' + t + '</h2>';
+    return '<main style="position:relative;z-index:1;">'
+      + '<article style="max-width:760px;margin:0 auto;padding:60px 24px 20px;">'
+        + '<div data-reveal style="margin-bottom:22px;"><span data-nav="blog" style="font-size:13.5px;color:var(--a2);cursor:pointer;font-weight:600;">\u2190 Back to blog</span></div>'
+        + '<div data-reveal><span style="font-size:12px;font-weight:600;color:var(--a3);text-transform:uppercase;letter-spacing:0.06em;">Product</span>'
+        + '<h1 style="font-family:Space Grotesk;font-weight:700;font-size:clamp(32px,4.6vw,46px);line-height:1.1;letter-spacing:-0.03em;margin:14px 0 20px;">Introducing agentic workflows in ' + brand + ' 3.0</h1>'
+        + '<div style="display:flex;align-items:center;gap:12px;margin-bottom:30px;"><div style="width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--a2),var(--a3));display:flex;align-items:center;justify-content:center;font-family:Space Grotesk;font-weight:700;font-size:14px;color:#0a0a12;">EM</div><div><div style="font-size:14px;font-weight:600;">Elena Marsh</div><div style="font-size:12.5px;color:var(--tx-4);">Mar 12, 2026 · 7 min read</div></div></div></div>'
+        + '<div data-reveal style="height:300px;border-radius:18px;background:linear-gradient(135deg,var(--a1),var(--a3));margin-bottom:34px;position:relative;overflow:hidden;"><div style="position:absolute;inset:0;background-image:linear-gradient(rgba(0,0,0,0.06) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,0,0.06) 1px,transparent 1px);background-size:28px 28px;"></div></div>'
+        + '<div data-reveal>'
+        + p('Today we\u2019re shipping the biggest release in ' + brand + '\u2019s history. Agentic workflows let you describe an outcome in plain language and hand it to an agent that plans the steps, calls the right tools, and adapts as it goes.')
+        + p('For the last year our customers have automated single tasks. The next leap is chaining those tasks into workflows that reason about context — pulling a record, drafting a response, waiting for approval, then acting.')
+        + h2('What\u2019s new')
+        + p('Agents can now branch on conditions, retry on failure, and ask a human when they\u2019re unsure. Every step is logged and citeable, so you always know exactly what happened and why.')
+        + '<blockquote style="border-left:3px solid var(--a2);padding:6px 0 6px 20px;margin:26px 0;font-size:18px;line-height:1.6;color:var(--tx-1);font-style:italic;">\u201CIt\u2019s the difference between a calculator and an analyst. The agent doesn\u2019t just compute — it decides.\u201D</blockquote>'
+        + h2('Getting started')
+        + p('Agentic workflows are available today on all paid plans. Open the workflow builder, describe your goal, and connect the tools you want the agent to use. We\u2019ll handle the orchestration.')
+        + p('We can\u2019t wait to see what you build. As always, this is just the beginning.')
+        + '</div>'
+        + '<div data-reveal style="' + this._mCard + 'padding:24px 26px;margin-top:36px;display:flex;align-items:center;gap:16px;"><div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--a2),var(--a3));display:flex;align-items:center;justify-content:center;font-family:Space Grotesk;font-weight:700;font-size:18px;color:#0a0a12;flex-shrink:0;">EM</div><div><div style="font-family:Space Grotesk;font-size:16px;font-weight:600;">Elena Marsh</div><div style="font-size:13.5px;color:var(--tx-4);line-height:1.5;margin-top:3px;">Co-founder & CEO at ' + brand + '. Writing about AI, product and the craft of building tools.</div></div></div>'
+      + '</article>'
+      + this.ctaBlockHTML(brand) + '</main>';
+  }
+
+  faqPage(brand) {
+    const groups = [
+      ['Getting started', [['Do I need a credit card to start?', 'No. The free plan is genuinely free forever — no card required. Upgrade only when you\u2019re ready.'], ['How long does setup take?', 'Most teams are live in under an hour. There\u2019s no build step and no infrastructure to manage.'], ['Can I import my existing data?', 'Yes. We support CSV import and two-way sync with 200+ tools out of the box.']]],
+      ['Billing', [['Can I change plans anytime?', 'Absolutely — upgrade or downgrade at any point. Changes are prorated automatically.'], ['Do you offer annual discounts?', 'Yes, annual billing saves you roughly two months versus paying monthly.'], ['What happens if I cancel?', 'You keep access until the end of your billing period, and you can export everything.']]],
+      ['Security', [['Is my data encrypted?', 'All data is encrypted in transit and at rest. We\u2019re SOC 2 Type II certified.'], ['Do you support SSO?', 'SAML SSO and SCIM provisioning are available on Business and Enterprise plans.'], ['Where is data hosted?', 'On enterprise plans you can choose your region for data residency.']]],
+    ];
+    const qa = (x) => '<div style="' + this._mCard + 'padding:22px 24px;margin-bottom:12px;"><div style="font-family:Space Grotesk;font-size:15.5px;font-weight:600;margin-bottom:9px;display:flex;gap:10px;"><span style="color:var(--a2);">Q</span>' + x[0] + '</div><p style="font-size:14.5px;line-height:1.65;color:var(--tx-3);padding-left:22px;">' + x[1] + '</p></div>';
+    const group = (g) => '<div data-reveal style="margin-bottom:36px;"><div style="font-family:Space Grotesk;font-size:20px;font-weight:600;margin-bottom:16px;">' + g[0] + '</div>' + g[1].map(qa).join('') + '</div>';
+    return '<main style="position:relative;z-index:1;">'
+      + this._mHero('HELP CENTER', 'Frequently asked ' + this._gr('questions'), 'Everything you need to know about ' + brand + '. Can\u2019t find an answer? Reach out any time.', 720)
+      + '<section style="max-width:760px;margin:0 auto;padding:36px 24px 40px;">' + groups.map(group).join('') + '</section>'
+      + '<section style="max-width:900px;margin:0 auto;padding:0 24px 80px;text-align:center;"><div data-reveal style="' + this._mCard + 'padding:40px;"><h2 style="font-family:Space Grotesk;font-weight:700;font-size:26px;letter-spacing:-0.02em;margin-bottom:10px;">Still have questions?</h2><p style="font-size:15px;color:var(--tx-3);margin-bottom:24px;">Our team replies within a few hours on business days.</p><span data-nav="contact" style="font-size:15px;font-weight:600;color:#0a0a12;background:linear-gradient(135deg,var(--a2),var(--a3));padding:13px 28px;border-radius:11px;cursor:pointer;">Contact support</span></div></section></main>';
+  }
+
+  legalPage(brand) {
+    const secs = [
+      ['1. Acceptance of terms', 'By accessing or using ' + brand + ', you agree to be bound by these Terms of Service and our Privacy Policy. If you do not agree, do not use the service.'],
+      ['2. Use of the service', 'You may use ' + brand + ' only in compliance with these terms and all applicable laws. You are responsible for the activity that occurs under your account and for keeping your credentials secure.'],
+      ['3. Subscriptions & billing', 'Paid plans are billed in advance on a monthly or annual basis and are non-refundable except as required by law. You can cancel at any time; access continues until the end of the current period.'],
+      ['4. Acceptable use', 'You agree not to misuse the service, including by attempting to disrupt it, reverse-engineer it, or use it to store or transmit unlawful content. We may suspend accounts that violate these terms.'],
+      ['5. Intellectual property', 'The service, including its design, code and content, is owned by ' + brand + ', Inc. You retain ownership of the data you submit, and grant us a limited license to process it to provide the service.'],
+      ['6. Termination', 'You may stop using the service at any time. We may suspend or terminate access if you breach these terms. Upon termination, you may export your data for 30 days.'],
+      ['7. Limitation of liability', 'The service is provided \u201Cas is.\u201D To the maximum extent permitted by law, ' + brand + ' is not liable for indirect, incidental or consequential damages arising from your use of the service.'],
+      ['8. Changes to these terms', 'We may update these terms from time to time. If we make material changes, we\u2019ll notify you in advance. Continued use after changes take effect constitutes acceptance.'],
+    ];
+    const toc = secs.map(s => '<a href="#" style="font-size:13.5px;color:var(--tx-4);text-decoration:none;padding:6px 0;display:block;" class="nx-link">' + s[0] + '</a>').join('');
+    const sec = (s) => '<div style="margin-bottom:32px;"><h2 style="font-family:Space Grotesk;font-size:19px;font-weight:600;letter-spacing:-0.01em;margin-bottom:12px;">' + s[0] + '</h2><p style="font-size:15.5px;line-height:1.75;color:var(--tx-3);">' + s[1] + '</p></div>';
+    return '<main style="position:relative;z-index:1;">'
+      + '<section style="max-width:900px;margin:0 auto;padding:70px 24px 20px;"><div data-reveal><div style="font-size:12.5px;font-weight:600;letter-spacing:0.16em;color:var(--a2);margin-bottom:14px;">LEGAL</div><h1 style="font-family:Space Grotesk;font-weight:700;font-size:clamp(32px,4.4vw,46px);letter-spacing:-0.03em;margin-bottom:12px;">Terms of Service</h1><p style="font-size:15px;color:var(--tx-4);">Last updated: March 1, 2026</p></div></section>'
+      + '<section style="max-width:1040px;margin:0 auto;padding:30px 24px 90px;"><div class="nx-frow" style="display:grid;grid-template-columns:230px 1fr;gap:44px;align-items:start;">'
+        + '<div style="position:sticky;top:90px;"><div style="font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--tx-5);margin-bottom:10px;">On this page</div>' + toc + '</div>'
+        + '<div data-reveal style="' + this._mCard + 'padding:40px 42px;">' + secs.map(sec).join('') + '</div>'
+      + '</div></section></main>';
+  }
+
+  ctaBlockHTML(brand) {
+    return '<section style="position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:40px 24px 90px;">' +
+      '<div style="position:relative;overflow:hidden;border-radius:24px;border:1px solid rgba(var(--fg),0.1);background:linear-gradient(150deg,rgba(var(--a1rgb),0.2),rgba(var(--a3rgb),0.08));padding:64px 40px;text-align:center;">' +
+        '<div style="position:absolute;top:-120px;left:50%;transform:translateX(-50%);width:600px;height:400px;background:radial-gradient(circle,rgba(var(--a1rgb),0.35),transparent 65%);filter:blur(30px);pointer-events:none;"></div>' +
+        '<div style="position:relative;">' +
+          '<h2 style="font-family:\'Space Grotesk\';font-weight:700;font-size:clamp(30px,4.6vw,50px);line-height:1.08;letter-spacing:-0.03em;margin-bottom:18px;">Ready to put your work on autopilot?</h2>' +
+          '<p style="font-size:17px;line-height:1.6;color:var(--tx-2);max-width:520px;margin:0 auto 34px;">Join thousands of teams shipping faster with ' + brand + '. Start free — no credit card required.</p>' +
+          '<div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">' +
+            '<span style="font-size:15.5px;font-weight:600;color:#0a0a12;background:linear-gradient(135deg,var(--a2),var(--a3));padding:15px 32px;border-radius:12px;box-shadow:0 12px 34px rgba(var(--a1rgb),0.4);cursor:pointer;">Start for free</span>' +
+            '<span style="font-size:15.5px;font-weight:600;color:var(--tx-0);background:rgba(var(--fg),0.06);border:1px solid rgba(var(--fg),0.16);padding:15px 32px;border-radius:12px;cursor:pointer;">Book a demo</span>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+    '</section>';
+  }
+
+  renderVals() {
+    const brand = this.props.brandName ?? 'Nexus';
+    const page = this.state.page;
+    const py = this.state.billingYearly;
+    const navC = (k) => page === k ? '#ffffff' : '#c9c9d6';
+
+    // ---- product tour tabs ----
+    const mockBox = (rows) => '<div style="display:flex;flex-direction:column;gap:12px;">' + rows + '</div>';
+    const IC = {
+      lead:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/>',
+      spark:'<path d="M12 3l1.9 5.8L20 10l-6.1 1.2L12 17l-1.9-5.8L4 10l6.1-1.2z"/>',
+      bell:'<path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/>',
+      chart:'<path d="M3 3v18h18"/><path d="M7 13l3-3 3 2 4-5"/>',
+      alert:'<path d="M10.3 3.2 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.2a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/>',
+      doc:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h4"/>',
+      search:'<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>',
+      file:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/>',
+      hash:'<path d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18"/>',
+      clip:'<rect x="4" y="4" width="16" height="18" rx="2"/><path d="M9 4V2h6v2"/><path d="M8.5 12.5l2.5 2.5 4.5-4.5"/>',
+      branch:'<circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="8" r="3"/><path d="M18 11a6 6 0 0 1-6 6H6"/>',
+      link:'<path d="M10 13a5 5 0 0 0 7 0l2-2a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-2 2a5 5 0 0 0 7 7l1-1"/>',
+      users:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.9"/>',
+      shield:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/>',
+      lock:'<rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+      list:'<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+    };
+    const mrow = (icon, a, b) => '<div style="display:flex;align-items:center;gap:12px;padding:13px 15px;border-radius:11px;background:rgba(var(--fg),0.04);border:1px solid rgba(var(--fg),0.07);"><span style="width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,rgba(var(--a1rgb),0.28),rgba(var(--a3rgb),0.18));border:1px solid rgba(var(--fg),0.1);display:flex;align-items:center;justify-content:center;color:var(--a2);flex-shrink:0;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">' + icon + '</svg></span><div style="flex:1;"><div style="font-size:13.5px;font-weight:600;color:var(--tx-1);">' + a + '</div><div style="font-size:12px;color:var(--tx-4);margin-top:2px;">' + b + '</div></div></div>';
+    const tabData = [
+      { label: 'Automations', title: 'Agents that run your workflows', desc: 'Chain triggers, conditions and actions across every app. The AI handles the busywork end-to-end while you stay in control.', bullets: ['Visual, no-code builder', 'Runs 24/7 with retries', 'Human-in-the-loop approvals'], mock: mockBox(mrow(IC.lead, 'New lead captured', 'Trigger · Salesforce') + mrow(IC.spark, 'Enrich & score', 'AI agent · running') + mrow(IC.bell, 'Notify owner in Slack', 'Action · queued')) },
+      { label: 'Insights', title: 'Dashboards that update themselves', desc: 'Ask a question in plain language and get a live chart back. Metrics refresh automatically and flag what needs you.', bullets: ['Natural-language queries', 'Auto-refreshing metrics', 'Anomaly alerts'], mock: mockBox(mrow(IC.chart, 'Revenue this quarter', '▲ 18% vs last') + mrow(IC.alert, 'Churn risk accounts', '3 flagged today') + mrow(IC.doc, 'Weekly summary', 'Generated by AI')) },
+      { label: 'Search', title: 'One search across everything', desc: 'Docs, messages, tickets and datasets — unified. Get a synthesized answer with sources, not ten blue links.', bullets: ['Cross-app results', 'Cited, trustworthy answers', 'Permission-aware'], mock: mockBox(mrow(IC.search, '"Q3 pricing decision"', 'Answer from 4 sources') + mrow(IC.file, 'Notion · Pricing v2', 'Doc match') + mrow(IC.hash, 'Slack · #strategy', 'Thread match')) },
+    ];
+    const tabs = tabData.map((t, i) => {
+      const active = this.state.tab === i;
+      return { label: t.label, select: this.selectTab(i),
+        border: active ? 'rgba(var(--a1rgb),0.5)' : 'rgba(var(--fg),0.12)',
+        bg: active ? 'linear-gradient(135deg,rgba(var(--a1rgb),0.25),rgba(var(--a3rgb),0.14))' : 'rgba(var(--fg),0.04)',
+        color: active ? '#ffffff' : '#a6a6b6' };
+    });
+    const activeTab = tabData[this.state.tab] || tabData[0];
+
+    // ---- steps ----
+    const steps = [
+      { n: '1', title: 'Connect your stack', body: 'Link Slack, Notion, Google, GitHub and 100+ more in a click. No setup scripts, no engineering time.' },
+      { n: '2', title: 'Teach your workflows', body: 'Describe what you want automated in plain language. The AI maps it to triggers and actions for you.' },
+      { n: '3', title: 'Let the agents run', body: 'Sit back while agents execute, learn and improve — surfacing only what genuinely needs your attention.' },
+    ];
+
+    // ---- integrations ----
+    const intIcon = {
+      chat:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
+      doc:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/>',
+      code:'<path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/>',
+      pen:'<path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l8 8"/><circle cx="12" cy="12" r="2"/>',
+      layers:'<path d="M12 2 2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/>',
+      folder:'<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>',
+      video:'<path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/>',
+      board:'<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18"/>',
+      target:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/>',
+      card:'<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>',
+      zap:'<path d="M13 2L3 14h7l-1 8 10-12h-7z"/>',
+      grid:'<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/>',
+    };
+    const integrations = [
+      { name: 'Slack', icon: intIcon.chat, color: '#e0dcff' }, { name: 'Notion', icon: intIcon.doc, color: '#e8e8ee' },
+      { name: 'GitHub', icon: intIcon.code, color: '#d8d8e2' }, { name: 'Figma', icon: intIcon.pen, color: '#ffd9c9' },
+      { name: 'Linear', icon: intIcon.layers, color: '#c9d4ff' }, { name: 'Drive', icon: intIcon.folder, color: '#c9f0d8' },
+      { name: 'Zoom', icon: intIcon.video, color: '#c9e6ff' }, { name: 'Jira', icon: intIcon.board, color: '#c9dcff' },
+      { name: 'HubSpot', icon: intIcon.target, color: '#ffd6cc' }, { name: 'Stripe', icon: intIcon.card, color: '#d6ccff' },
+      { name: 'Zapier', icon: intIcon.zap, color: '#ffd9c9' }, { name: 'Airtable', icon: intIcon.grid, color: '#ffe0c9' },
+    ].map(function(ig){ return { name: ig.name, color: ig.color, iconSvg: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">' + ig.icon + '</svg>' }; });
+
+    // ---- stats ----
+    const stats = [
+      { value: 40000, suffix: '+', label: 'Teams onboarded' },
+      { value: 12, suffix: 'M', label: 'Tasks automated / mo' },
+      { value: 99.9, suffix: '%', label: 'Uptime SLA' },
+      { value: 4.9, suffix: '/5', label: 'Average rating' },
+    ];
+
+    // ---- testimonials ----
+    const wc = ['#c9beff', '#a5edf7', '#ffd9c9', '#c9f0d8', '#ffd6cc', '#c9dcff'];
+    const wall = [
+      { quote: 'We cut our reporting time by 80%. The agents just handle it now — it feels like having three extra analysts.', author: 'Priya Raman', role: 'Head of Ops, Vellum', initials: 'PR' },
+      { quote: 'The unified search alone paid for the whole subscription. I stopped hunting across ten tools overnight.', author: 'Marcus Lee', role: 'PM, Northwind', initials: 'ML' },
+      { quote: 'Setup took an afternoon. By the next morning our agents had already triaged 200 tickets flawlessly.', author: 'Sofia Alvarez', role: 'Support Lead, Kite', initials: 'SA' },
+      { quote: 'Beautiful product, genuinely useful AI. Rare combination. Our whole team switched within a week.', author: 'Tom Becker', role: 'Founder, Loop', initials: 'TB' },
+      { quote: 'The insights dashboard flags churn risk before I would have noticed. It has saved two big accounts already.', author: 'Nadia Okonkwo', role: 'CS Director, Arc', initials: 'NO' },
+      { quote: 'Enterprise security ticked every box our IT team had. Adoption was the smoothest we have ever run.', author: 'David Chen', role: 'CTO, Meridian', initials: 'DC' },
+    ].map((w, i) => Object.assign({}, w, { color: wc[i % wc.length] }));
+
+    // ---- pricing ----
+    const planBtn = (pop) => pop ? 'color:#0a0a12;background:linear-gradient(135deg,var(--a2),var(--a3));' : 'color:var(--tx-0);background:rgba(var(--fg),0.05);border:1px solid rgba(var(--fg),0.16);';
+    const plans = [
+      { name: 'Starter', tagline: 'For individuals exploring AI-powered work.', price: '$0', period: 'forever', billed: 'No credit card required', popular: false, cta: 'Get started',
+        features: ['1 workspace', 'Up to 3 automations', 'Unified search', 'Community support'] },
+      { name: 'Pro', tagline: 'For teams that want to move fast.', price: py ? '$23' : '$29', period: '/user/mo', billed: py ? 'Billed $276 / user yearly' : 'Billed monthly', popular: true, cta: 'Start free trial',
+        features: ['Everything in Starter', 'Unlimited automations', 'AI agents & insights', '100+ integrations', 'Priority support'] },
+      { name: 'Enterprise', tagline: 'For organizations at scale.', price: 'Custom', period: '', billed: "Let's build your plan", popular: false, cta: 'Contact sales',
+        features: ['Everything in Pro', 'SSO & SCIM', 'Advanced security & audit', 'Dedicated success manager', '99.9% uptime SLA'] },
+    ].map(p => Object.assign({}, p, {
+      bg: p.popular ? 'linear-gradient(160deg,rgba(var(--a1rgb),0.16),rgba(var(--a3rgb),0.07))' : 'rgba(var(--fg),0.025)',
+      border: p.popular ? 'rgba(var(--a1rgb),0.4)' : 'rgba(var(--fg),0.08)',
+      shadow: p.popular ? 'box-shadow:0 24px 70px rgba(var(--a1rgb),0.22);' : '',
+      btn: planBtn(p.popular),
+    }));
+    const monthlyColor = py ? 'var(--tx-4)' : 'var(--tx-0)';
+    const yearlyColor = py ? 'var(--tx-0)' : 'var(--tx-4)';
+    const knobLeft = py ? '29px' : '3px';
+
+    // ---- faqs ----
+    const faqData = [
+      { q: 'How long does it take to get started?', a: 'Most teams are up and running the same afternoon. Connect your tools, describe a workflow, and the AI handles the rest — no engineering required.' },
+      { q: 'Is my data secure?', a: 'Yes. We are SOC 2 Type II certified with end-to-end encryption, SSO, and granular access controls. Your data is never used to train third-party models.' },
+      { q: 'Can I change plans later?', a: 'Absolutely. Upgrade, downgrade or cancel at any time from your billing settings. Changes are prorated automatically.' },
+      { q: 'Which tools do you integrate with?', a: 'Over 100 out of the box — Slack, Notion, Google Workspace, GitHub, Linear, Salesforce and many more. Plus a REST API and webhooks for anything custom.' },
+      { q: 'Do you offer a free trial?', a: 'Every paid plan includes a 14-day free trial with full features. The Starter plan is free forever, no card needed.' },
+    ];
+    const faqs = faqData.map((f, i) => { const open = this.state.faqOpen === i; return { q: f.q, a: f.a, open, toggle: this.toggleFaq(i), rot: open ? 'rotate(180deg)' : 'rotate(0deg)' }; });
+
+    // ---- FEATURES PAGE ----
+    const frMock = (title, rows) => '<div style="width:100%;border-radius:14px;border:1px solid rgba(var(--fg),0.09);background:rgba(var(--fg),0.03);padding:22px;"><div style="font-family:\'Space Grotesk\';font-size:14px;font-weight:600;color:var(--tx-1);margin-bottom:14px;">' + title + '</div>' + rows + '</div>';
+    const featureRows = [
+      { eyebrow: 'Automation', title: 'Build agents in minutes, not months', body: 'A visual builder anyone can use. Compose triggers, AI steps and actions — then let it run reliably in the background.', points: ['Drag-and-drop workflow canvas', 'Reusable templates library', 'Version history & rollbacks'],
+        mock: frMock('Workflow · Lead routing', mrow(IC.clip, 'Trigger: form submitted', 'Live') + mrow(IC.spark, 'AI: score & enrich', 'Running') + mrow(IC.branch, 'Route to owner', 'Queued')) },
+      { eyebrow: 'Intelligence', title: 'Answers, not just search results', body: 'Ask anything about your company knowledge and get a synthesized, cited answer drawn from every connected source.', points: ['Retrieval across all your apps', 'Every answer shows its sources', 'Respects existing permissions'],
+        mock: frMock('Ask AI', mrow(IC.search, 'What changed in pricing?', '4 sources') + mrow(IC.doc, 'Summary generated', '0.8s') + mrow(IC.link, 'View citations', '4 docs')) },
+      { eyebrow: 'Analytics', title: 'Metrics that watch themselves', body: 'Self-updating dashboards surface trends and anomalies automatically, so the important stuff finds you first.', points: ['Auto-refreshing live tiles', 'Proactive anomaly alerts', 'Shareable, exportable reports'],
+        mock: frMock('Dashboard', mrow(IC.chart, 'Revenue', '▲ 18%') + mrow(IC.users, 'Active users', '▲ 6%') + mrow(IC.alert, 'Churn risk', '3 flagged')) },
+      { eyebrow: 'Security', title: 'Enterprise-grade by default', body: 'Everything your security team asks for, built in from day one — not bolted on as an upsell.', points: ['SOC 2 Type II & GDPR', 'SSO, SCIM & audit logs', 'Granular role-based access'],
+        mock: frMock('Security center', mrow(IC.shield, 'SSO enforced', 'Active') + mrow(IC.list, 'Audit log', '1,204 events') + mrow(IC.lock, 'Data encryption', 'AES-256')) },
+    ].map((r, i) => Object.assign({}, r, { textOrder: i % 2 === 0 ? 1 : 2, mockOrder: i % 2 === 0 ? 2 : 1 }));
+
+    const af = (p, label) => ({ icon: this.ic(p, 24), label });
+    const awesomeFeatures = [
+      af('<path d="M13 2L3 14h7l-1 8 10-12h-7z"/>', 'Blazing fast'),
+      af('<rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>', 'Secure by default'),
+      af('<path d="M12 2l2.4 7.4H22l-6 4.4 2.3 7.2L12 16.6 5.7 21l2.3-7.2-6-4.4h7.6z"/>', 'AI-native'),
+      af('<rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>', 'Fully responsive'),
+      af('<circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20"/>', 'Global CDN'),
+      af('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/>', 'Clean docs'),
+      af('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>', 'Highly customizable'),
+      af('<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>', 'Live chat ready'),
+      af('<path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"/>', 'Dark & light'),
+      af('<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>', '40+ page templates'),
+      af('<path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/>', '10+ chart types'),
+      af('<path d="M20 6L9 17l-5-5"/>', 'RTL support'),
+    ];
+
+    // ---- comparison table ----
+    const chk = '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--a3)" stroke-width="2.6"><path d="M20 6L9 17l-5-5"/></svg>';
+    const dash = '<span style="color:#5c5c6e;font-size:16px;">—</span>';
+    const cell = (v) => '<div style="padding:15px 12px;text-align:center;display:flex;align-items:center;justify-content:center;font-size:13.5px;color:var(--tx-2);">' + v + '</div>';
+    const crow = (label, a, b, c) => '<div style="padding:15px 22px;font-size:14px;color:var(--tx-1);display:flex;align-items:center;">' + label + '</div>' + cell(a) + cell(b) + cell(c);
+    const comparison = [
+      crow('Workspaces', '1', '5', 'Unlimited'),
+      crow('Automations', '3', 'Unlimited', 'Unlimited'),
+      crow('AI agents', dash, chk, chk),
+      crow('Integrations', '10', '100+', '100+'),
+      crow('Unified search', chk, chk, chk),
+      crow('SSO & SCIM', dash, dash, chk),
+      crow('Audit logs', dash, dash, chk),
+      crow('Support', 'Community', 'Priority', 'Dedicated'),
+    ];
+
+    // ---- ABOUT ----
+    const aboutStats = [
+      { value: 2019, suffix: '', label: 'Founded' },
+      { value: 180, suffix: '+', label: 'Team members' },
+      { value: 40000, suffix: '+', label: 'Customers' },
+      { value: 60, suffix: 'M', label: 'Funding raised' },
+    ];
+    const val = (p, title, body) => ({ icon: this.ic(p, 22), title, body });
+    const values = [
+      val('<path d="M12 2l2.4 7.4H22l-6 4.4 2.3 7.2L12 16.6 5.7 21l2.3-7.2-6-4.4h7.6z"/>', 'Craft over noise', 'We sweat the details so the product feels effortless. Quality is a feature, not an afterthought.'),
+      val('<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/>', 'Customer-obsessed', 'Every roadmap decision starts with a real customer problem. We ship what matters, fast.'),
+      val('<rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>', 'Trust by default', 'Security and privacy are foundations, not features. We earn trust with every interaction.'),
+    ];
+    const timeline = [
+      { year: '2019', title: 'The beginning', body: 'Two engineers, one frustration with tool sprawl, and a prototype built over a weekend.' },
+      { year: '2021', title: 'Series A', body: 'Raised $12M to build the intelligent workspace and grew the team to 40.' },
+      { year: '2023', title: 'AI agents launch', body: 'Shipped autonomous agents and crossed 10,000 paying teams worldwide.' },
+      { year: '2026', title: 'Nexus 3.0', body: 'Agentic workflows, unified search 2.0, and 40,000+ teams and counting.' },
+    ];
+    const tc = ['#c9beff', '#a5edf7', '#ffd9c9', '#c9f0d8'];
+    const team = [
+      { name: 'Elena Marsh', role: 'Co-founder & CEO', initials: 'EM' },
+      { name: 'Raj Patel', role: 'Co-founder & CTO', initials: 'RP' },
+      { name: 'Mina Cho', role: 'VP of Product', initials: 'MC' },
+      { name: 'Leo Fischer', role: 'VP of Engineering', initials: 'LF' },
+    ].map((m, i) => Object.assign({}, m, { color: tc[i % tc.length] }));
+
+    // ---- BLOG ----
+    const cats = ['All', 'Product', 'Engineering', 'AI', 'Company'];
+    const categories = cats.map((c, i) => ({ name: c, border: i === 0 ? 'rgba(var(--a1rgb),0.5)' : 'rgba(var(--fg),0.12)', bg: i === 0 ? 'rgba(var(--a1rgb),0.14)' : 'rgba(var(--fg),0.03)', color: i === 0 ? '#c9beff' : 'var(--tx-3)' }));
+    const th = ['linear-gradient(135deg,var(--a1),var(--a3))', 'linear-gradient(135deg,var(--a3),var(--a1))', 'linear-gradient(135deg,var(--a2),#febc2e)', 'linear-gradient(135deg,#febc2e,var(--a1))', 'linear-gradient(135deg,var(--a3),var(--a2))', 'linear-gradient(135deg,var(--a1),#ff5f9e)'];
+    const posts = [
+      { cat: 'Product', title: 'How agentic workflows change automation', excerpt: 'A deep dive into agents that plan and act on their own — and what it means for your team.', meta: 'Elena Marsh · 6 min read' },
+      { cat: 'Engineering', title: 'Building a permission-aware search index', excerpt: 'The architecture behind unified search that never leaks what a user should not see.', meta: 'Raj Patel · 9 min read' },
+      { cat: 'AI', title: 'Prompt patterns that actually ship', excerpt: 'Five reusable patterns we use in production to keep AI reliable and predictable.', meta: 'Mina Cho · 5 min read' },
+      { cat: 'Company', title: 'Our path to SOC 2 Type II', excerpt: 'What it took to meet enterprise security bars — and why we started on day one.', meta: 'Leo Fischer · 7 min read' },
+      { cat: 'Product', title: 'Designing dashboards that update themselves', excerpt: 'The UX principles behind live tiles, anomaly alerts and zero-config reporting.', meta: 'Mina Cho · 4 min read' },
+      { cat: 'AI', title: 'Evaluating LLMs for enterprise workloads', excerpt: 'Our framework for choosing models across cost, latency and accuracy trade-offs.', meta: 'Raj Patel · 8 min read' },
+    ].map((p, i) => Object.assign({}, p, { thumb: th[i % th.length], catIconSvg: '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' + ({ Product:'<path d="M21 16V8a2 2 0 0 0-1-1.7l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.7l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.3 7 12 12l8.7-5M12 22V12"/>', Engineering:'<path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/>', AI:'<rect x="7" y="7" width="10" height="10" rx="2"/><path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/>', Company:'<path d="M3 21h18M6 21V7l6-4 6 4v14M10 9h4M10 13h4M10 17h4"/>' }[p.cat] || '') + '</svg>' }));
+
+    // ---- CONTACT ----
+    const cc = (p, title, body) => ({ icon: this.ic(p, 20), title, body });
+    const contactCards = [
+      cc('<path d="M4 4h16v16H4z" fill="none"/><path d="M22 6l-10 7L2 6"/><rect x="2" y="4" width="20" height="16" rx="2"/>', 'Email us', 'hello@nexus.io — we reply within a few hours on weekdays.'),
+      cc('<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>', 'Live chat', 'Chat with the team right from your dashboard, 24/5.'),
+      cc('<path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20"/>', 'Visit us', '548 Market St, San Francisco, CA — say hi if you are nearby.'),
+    ];
+
+    const sun = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
+    const moon = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>';
+    const accentDefs = [
+      { key: 'violet', name: 'Violet', grad: 'linear-gradient(135deg,#a48bff,#22d3ee)' },
+      { key: 'emerald', name: 'Emerald', grad: 'linear-gradient(135deg,#34d399,#2dd4bf)' },
+      { key: 'orange', name: 'Orange', grad: 'linear-gradient(135deg,#fb923c,#f59e0b)' },
+    ];
+    const accentSwatches = accentDefs.map(a => ({ name: a.name, grad: a.grad, pick: this.setAccent(a.key), ring: this.accent === a.key ? 'var(--tx-hi)' : 'transparent' }));
+
+    return {
+      theme: this.theme, accent: this.accent,
+      toggleTheme: this.toggleTheme,
+      themeIcon: this.theme === 'dark' ? sun : moon,
+      themeLabel: this.theme === 'dark' ? 'Light' : 'Dark',
+      accentSwatches,
+      brandName: brand,
+      goHome: this.goHome, goFeatures: this.goFeatures, goPricing: this.goPricing, goAbout: this.goAbout, goBlog: this.goBlog, goContact: this.goContact,
+      goServices: this.goServices, goCareers: this.goCareers, goTeam: this.goTeam, goBlogPost: this.goBlogPost, goFaq: this.goFaq, goLegal: this.goLegal,
+      isServices: page === 'services', isCareers: page === 'careers', isTeam: page === 'team', isBlogPost: page === 'blog-post', isFaq: page === 'faq', isLegal: page === 'legal',
+      servicesPage: this.servicesPage(brand), careersPage: this.careersPage(brand), teamPage: this.teamPage(brand), blogPost: this.blogPost(brand), faqPage: this.faqPage(brand), legalPage: this.legalPage(brand),
+      navHome: navC('home'), navFeatures: navC('features'), navPricing: navC('pricing'), navAbout: navC('about'), navBlog: navC('blog'), navContact: navC('contact'),
+      toggleMenu: this.toggleMenu, menuOpen: this.state.menuOpen,
+      isHome: page === 'home', isFeatures: page === 'features', isPricing: page === 'pricing', isAbout: page === 'about', isBlog: page === 'blog', isContact: page === 'contact', is404: page === '404',
+      logos: ['Vellum', 'Northwind', 'Kite', 'Loop', 'Arc', 'Meridian', 'Vellum', 'Northwind', 'Kite', 'Loop', 'Arc', 'Meridian'],
+      tabs, activeTab,
+      steps, integrations, stats, wall,
+      monthlyColor, yearlyColor, knobLeft, toggleBilling: this.toggleBilling,
+      plans, faqs,
+      ctaBlock: this.ctaBlockHTML(brand),
+      featureRows, awesomeFeatures, comparison,
+      aboutStats, values, timeline, team,
+      categories, posts, contactCards,
+    };
+  }
+}
+</script>
+</body>
+</html>
