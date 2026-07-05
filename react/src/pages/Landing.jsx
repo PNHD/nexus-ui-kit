@@ -167,6 +167,27 @@ export default function Landing() {
         )}
       </header>
 
+      <div
+        style={{
+          position: 'relative',
+          zIndex: 2,
+          textAlign: 'center',
+          padding: '10px 24px',
+          fontSize: 13,
+          background: 'rgba(var(--fg),0.03)',
+          borderBottom: '1px solid rgba(var(--fg),0.08)',
+          color: 'var(--tx-3)',
+        }}
+      >
+        You're viewing the <strong style={{ color: 'var(--tx-1)' }}>React (Vite)</strong> edition · also available as an{' '}
+        <a
+          href="https://nexus-ui-kit.pages.dev/"
+          style={{ color: 'var(--a2)', fontWeight: 600, textDecoration: 'none' }}
+        >
+          HTML / CSS / JS edition →
+        </a>
+      </div>
+
       <main style={{ position: 'relative', zIndex: 1 }}>
         {/* ===== HERO ===== */}
         <section style={{ maxWidth: 1000, margin: '0 auto', padding: '92px 24px 36px', textAlign: 'center' }}>
