@@ -1,0 +1,23 @@
+{
+  "name": "nexus-ui-kit-react",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Nexus UI Kit — React (Vite) edition. Admin dashboard + SaaS landing with light/dark and 3 accent skins.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "apexcharts": "^5.16.0",
+    "react": "^18.3.1",
+    "react-apexcharts": "^2.1.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.24.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.1",
+    "vite": "^5.3.3"
+  }
+}
