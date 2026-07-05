@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  #nx-root {
+    --a1:#7c5cff; --a2:#a48bff; --a3:#22d3ee; --a1rgb:124,92,255; --a3rgb:34,211,238;
+    --fg:255,255,255; --bg-rgb:8,8,12;
+    --bg:#08080c; --bg-2:#0d0d14;
+    --tx-hi:#f4f4f7; --tx-1:#e9e9ef; --tx-2:#c4c4d2; --tx-3:#9a9aab; --tx-4:#8b8b9c; --tx-5:#6f6f80;
+    --ok:#22c55e; --warn:#febc2e; --err:#ff5f70;
+  }
+  #nx-root[data-accent='emerald']{ --a1:#10b981; --a2:#34d399; --a3:#2dd4bf; --a1rgb:16,185,129; --a3rgb:45,212,191; }
+  #nx-root[data-accent='orange']{ --a1:#f97316; --a2:#fb923c; --a3:#f59e0b; --a1rgb:249,115,22; --a3rgb:245,158,11; }
+  #nx-root[data-theme='light']{
+    --fg:22,24,38; --bg-rgb:244,245,248;
+    --bg:#f4f5f8; --bg-2:#ffffff;
+    --tx-hi:#14151c; --tx-1:#1f2029; --tx-2:#3a3b46; --tx-3:#565762; --tx-4:#6b6c77; --tx-5:#8a8b95;
+  }
+  html { scroll-behavior: smooth; }
+  body { background: #08080c; }
+  body:has(#nx-root[data-theme='light']) { background: #f4f5f8; }
+  input, textarea, select, button { font-family: 'Sora', sans-serif; }
+  input::placeholder, textarea::placeholder { color: var(--tx-5); }
+  [data-reveal] { opacity: 0; transform: translateY(24px); transition: opacity .6s cubic-bezier(.22,.61,.36,1), transform .6s cubic-bezier(.22,.61,.36,1); }
+  [data-reveal][data-show] { opacity: 1; transform: none; }
+  @media (prefers-reduced-motion: reduce){ [data-reveal]{opacity:1!important;transform:none!important;transition:none!important;} }
+  .nx-themebtn { transition: background .2s, border-color .2s, transform .15s; }
+  .nx-themebtn:hover { transform: translateY(-1px); }
+  .nx-tip { position: relative; }
+  .nx-tip .nx-tipbox { opacity: 0; visibility: hidden; transition: opacity .18s, transform .18s; transform: translate(-50%, 4px); }
+  .nx-tip:hover .nx-tipbox { opacity: 1; visibility: visible; transform: translate(-50%, 0); }
+  .nx-navlink { transition: color .2s, background .2s; }
+  .nx-navlink:hover { color: var(--tx-hi) !important; background: rgba(var(--fg),0.06); }
+  @keyframes nx-spin { to { transform: rotate(360deg); } }
+  @keyframes nx-shimmer { 0% { background-position: -400px 0; } 100% { background-position: 400px 0; } }
+  @media (max-width: 900px){ .nx-sidenav { display:none !important; } .nx-main { padding-left:24px !important; } }
+</style>
+</helmet>
+
+<div id="nx-root" data-theme="{{ theme }}" data-accent="{{ accent }}" style="background:var(--bg);color:var(--tx-1);font-family:'Sora',sans-serif;min-height:100vh;position:relative;transition:background .3s,color .3s;">
+
+  <!-- theme control bar -->
+  <div style="position:fixed;bottom:20px;left:20px;z-index:90;display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:100px;background:rgba(var(--bg-rgb),0.82);backdrop-filter:blur(14px);border:1px solid rgba(var(--fg),0.12);box-shadow:0 12px 34px rgba(0,0,0,0.35);">
+    <button onClick="{{ toggleTheme }}" class="nx-themebtn" title="Toggle light / dark" style="display:flex;align-items:center;gap:7px;background:rgba(var(--fg),0.06);border:1px solid rgba(var(--fg),0.12);color:var(--tx-hi);border-radius:100px;padding:7px 13px;cursor:pointer;font-family:'Sora',sans-serif;font-size:12.5px;font-weight:600;">
+      <span data-html="{{ themeIcon }}" style="display:flex;"></span>{{ themeLabel }}
+    </button>
+    <span style="width:1px;height:20px;background:rgba(var(--fg),0.14);"></span>
+    <div style="display:flex;align-items:center;gap:7px;">
+      <sc-for list="{{ accentSwatches }}" as="sw" hint-placeholder-count="3">
+        <button onClick="{{ sw.pick }}" title="{{ sw.name }}" class="nx-themebtn" style="width:22px;height:22px;border-radius:50%;cursor:pointer;background:{{ sw.grad }};border:2px solid {{ sw.ring }};"></button>
+      </sc-for>
+    </div>
+  </div>
+
+  <!-- header -->
+  <header style="position:sticky;top:0;z-index:60;backdrop-filter:blur(18px);background:rgba(var(--bg-rgb),0.72);border-bottom:1px solid rgba(var(--fg),0.08);">
+    <div style="max-width:1240px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:20px;">
+      <a href="Nexus Theme Showcase.dc.html" style="display:flex;align-items:center;gap:11px;text-decoration:none;color:var(--tx-hi);">
+        <span style="width:33px;height:33px;border-radius:9px;background:linear-gradient(135deg,var(--a1),var(--a3));display:flex;align-items:center;justify-content:center;font-weight:700;font-family:'Space Grotesk';color:#0a0a12;box-shadow:0 6px 20px rgba(var(--a1rgb),0.45);">N</span>
+        <span style="font-family:'Space Grotesk';font-weight:600;font-size:18px;letter-spacing:-0.02em;">Nexus <span style="color:var(--tx-4);font-weight:500;">Components</span></span>
+      </a>
+      <a href="Nexus Admin Dashboard.dc.html" style="text-decoration:none;font-size:13.5px;font-weight:600;color:var(--tx-hi);background:rgba(var(--fg),0.06);border:1px solid rgba(var(--fg),0.14);padding:9px 16px;border-radius:9px;">Open dashboard →</a>
+    </div>
+  </header>
+
+  <div style="max-width:1240px;margin:0 auto;display:grid;grid-template-columns:212px 1fr;gap:0;">
+    <!-- side nav -->
+    <aside class="nx-sidenav" style="align-self:start;position:sticky;top:64px;padding:30px 14px;max-height:calc(100vh - 64px);overflow-y:auto;">
+      <div style="font-size:11px;font-weight:700;letter-spacing:0.14em;color:var(--tx-5);padding:0 12px 10px;">COMPONENTS</div>
+      <nav style="display:flex;flex-direction:column;gap:2px;">
+        <sc-for list="{{ sections }}" as="s" hint-placeholder-count="14">
+          <a href="{{ s.href }}" class="nx-navlink" style="text-decoration:none;color:var(--tx-3);font-size:13.5px;font-weight:500;padding:8px 12px;border-radius:8px;">{{ s.label }}</a>
+        </sc-for>
+      </nav>
+    </aside>
+
+    <!-- main -->
+    <main class="nx-main" style="padding:36px 32px 100px;min-width:0;">
+      <div data-reveal style="margin-bottom:38px;">
+        <div style="font-size:12.5px;font-weight:600;letter-spacing:0.14em;color:var(--a2);margin-bottom:10px;">UI KIT</div>
+        <h1 style="font-family:'Space Grotesk';font-weight:700;font-size:clamp(30px,4vw,44px);letter-spacing:-0.03em;margin-bottom:12px;">Components</h1>
+        <p style="font-size:16px;line-height:1.6;color:var(--tx-3);max-width:620px;">Every building block in the kit, themed live. Toggle light/dark and swap accents in the corner — every component below responds instantly.</p>
+      </div>
+
+      <!-- ===== BUTTONS ===== -->
+      <section id="buttons" style="scroll-margin-top:80px;margin-bottom:44px;">
+        <div data-reveal style="font-family:'Space Grotesk';font-size:19px;font-weight:600;margin-bottom:4px;">Buttons</div>
+        <div data-reveal style="font-size:13.5px;color:var(--tx-4);margin-bottom:20px;">Variants, sizes, icon &amp; state.</div>
+        <div data-reveal style="padding:26px;border-radius:16px;background:rgba(var(--fg),0.025);border:1px solid rgba(var(--fg),0.08);display:flex;flex-direction:column;gap:22px;">
+          <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;">
+            <button style="font-size:14px;font-weight:600;color:#0a0a12;background:linear-gradient(135deg,var(--a2),var(--a3));border:none;padding:11px 20px;border-radius:10px;cursor:pointer;box-shadow:0 8px 22px rgba(var(--a1rgb),0.35);">Primary</button>
+            <button style="font-size:14px;font-weight:600;color:var(--tx-hi);background:rgba(var(--fg),0.06);border:1px solid rgba(var(--fg),0.16);padding:11px 20px;border-radius:10px;cursor:pointer;">Secondary</button>
+            <button style="font-size:14px;font-weight:600;color:var(--a2);background:transparent;border:1px solid rgba(var(--a1rgb),0.5);padding:11px 20px;border-radius:10px;cursor:pointer;">Outline</button>
+            <button style="font-size:14px;font-weight:600;color:var(--tx-2);background:transparent;border:none;padding:11px 16px;border-radius:10px;cursor:pointer;">Ghost</button>
+            <button style="font-size:14px;font-weight:600;color:#fff;background:var(--err);border:none;padding:11px 20px;border-radius:10px;cursor:pointer;">Danger</button>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;">
+            <button style="font-size:12.5px;font-weight:600;color:#0a0a12;background:linear-gradient(135deg,var(--a2),var(--a3));border:none;padding:7px 14px;border-radius:8px;cursor:pointer;">Small</button>
+            <button style="font-size:14px;font-weight:600;color:#0a0a12;background:linear-gradient(135deg,var(--a2),var(--a3));border:none;padding:11px 20px;border-radius:10px;cursor:pointer;">Medium</button>
+            <button style="font-size:15.5px;font-weight:600;color:#0a0a12;background:linear-gradient(135deg,var(--a2),var(--a3));border:none;padding:14px 26px;border-radius:12px;cursor:pointer;">Large</button>
+            <button style="display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--tx-hi);background:rgba(var(--fg),0.06);border:1px solid rgba(var(--fg),0.16);padding:11px 18px;border-radius:10px;cursor:pointer;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>With icon</button>
+            <button style="display:inline-flex;align-items:center;gap:9px;font-size:14px;font-weight:600;color:var(--tx-4);background:rgba(var(--fg),0.06);border:1px solid rgba(var(--fg),0.12);padding:11px 18px;border-radius:10px;cursor:default;"><span style="width:15px;height:15px;border-radius:50%;border:2px solid rgba(var(--fg),0.25);border-top-color:var(--a2);animation:nx-spin .7s linear infinite;display:inline-block;"></span>Loading</button>
+            <button disabled style="font-size:14px;font-weight:600;color:var(--tx-5);background:rgba(var(--fg),0.04);border:1px solid rgba(var(--fg),0.1);padding:11px 20px;border-radius:10px;cursor:not-allowed;opacity:.7;">Disabled</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== BADGES ===== -->
+      <section id="badges" style="scroll-margin-top:80px;margin-bottom:44px;">
+        <div data-reveal style="font-family:'Space Grotesk';font-size:19px;font-weight:600;margin-bottom:4px;">Badges &amp; chips</div>
+        <div data-reveal style="font-size:13.5px;color:var(--tx-4);margin-bottom:20px;">Status pills, counts and removable tags.</div>
+        <div data-reveal style="padding:26px;border-radius:16px;background:rgba(var(--fg),0.025);border:1px solid rgba(var(--fg),0.08);display:flex;flex-direction:column;gap:20px;">
+          <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;">
+            <span style="font-size:12px;font-weight:600;color:var(--ok);background:rgba(34,197,94,0.14);padding:5px 11px;border-radius:100px;display:inline-flex;align-items:center;gap:6px;"><span style="width:6px;height:6px;border-radius:50%;background:var(--ok);"></span>Active</span>
+            <span style="font-size:12px;font-weight:600;color:var(--warn);background:rgba(254,188,46,0.14);padding:5px 11px;border-radius:100px;display:inline-flex;align-items:center;gap:6px;"><span style="width:6px;height:6px;border-radius:50%;background:var(--warn);"></span>Pending</span>
+            <span style="font-size:12px;font-weight:600;color:var(--err);background:rgba(255,95,112,0.14);padding:5px 11px;border-radius:100px;display:inline-flex;align-items:center;gap:6px;"><span style="width:6px;height:6px;border-radius:50%;background:var(--err);"></span>Failed</span>
+            <span style="font-size:12px;font-weight:600;color:var(--a2);background:rgba(var(--a1rgb),0.14);padding:5px 11px;border-radius:100px;">New</span>
+            <span style="font-size:12px;font-weight:600;color:var(--tx-3);background:rgba(var(--fg),0.08);padding:5px 11px;border-radius:100px;">Draft</span>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;">
+            <span style="font-size:12.5px;font-weight:500;color:var(--tx-2);background:rgba(var(--fg),0.06);border:1px solid rgba(var(--fg),0.1);padding:6px 8px 6px 12px;border-radius:8px;display:inline-flex;align-items:center;gap:8px;">Design<span style="cursor:pointer;color:var(--tx-4);display:inline-flex;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></span></span>
+            <span style="font-size:12.5px;font-weight:500;color:var(--tx-2);background:rgba(var(--fg),0.06);border:1px solid rgba(var(--fg),0.1);padding:6px 8px 6px 12px;border-radius:8px;display:inline-flex;align-items:center;gap:8px;">Engineering<span style="cursor:pointer;color:var(--tx-4);display:inline-flex;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></span></span>
+            <span style="font-size:11px;font-weight:700;color:#0a0a12;background:linear-gradient(135deg,var(--a2),var(--a3));min-width:20px;height:20px;padding:0 6px;border-radius:100px;display:inline-flex;align-items:center;justify-content:center;">8</span>
+            <span style="font-size:11px;font-weight:700;color:#fff;background:var(--err);min-width:20px;height:20px;padding:0 6px;border-radius:100px;display:inline-flex;align-items:center;justify-content:center;">99+</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== AVATARS ===== -->
+      <section id="avatars" style="scroll-margin-top:80px;margin-bottom:44px;">
+        <div data-reveal style="font-family:'Space Grotesk';font-size:19px;font-weight:600;margin-bottom:4px;">Avatars</div>
+        <div data-reveal style="font-size:13.5px;color:var(--tx-4);margin-bottom:20px;">Sizes, status and stacked groups.</div>
+        <div data-reveal style="padding:26px;border-radius:16px;background:rgba(var(--fg),0.025);border:1px solid rgba(var(--fg),0.08);display:flex;flex-wrap:wrap;gap:26px;align-items:center;">
+          <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#c9beff,#a5edf7);display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk';font-weight:700;font-size:12px;color:#0a0a12;">AM</div>
+          <div style="width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#ffd9c9,#c9beff);display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk';font-weight:700;font-size:15px;color:#0a0a12;">SK</div>
+          <div style="position:relative;width:52px;height:52px;"><div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#a5edf7,#c9f0d8);display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk';font-weight:700;font-size:18px;color:#0a0a12;">TW</div><span style="position:absolute;bottom:2px;right:2px;width:13px;height:13px;border-radius:50%;background:var(--ok);border:2.5px solid var(--bg);"></span></div>
+          <div style="display:flex;">
+            <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#c9beff,#a5edf7);border:2.5px solid var(--bg);display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk';font-weight:700;font-size:13px;color:#0a0a12;">JD</div>
+            <div style="width:38px;height:38px;border-radius:50%;margin-left:-12px;background:linear-gradient(135deg,#ffd6cc,#ffd9c9);border:2.5px solid var(--bg);display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk';font-weight:700;font-size:13px;color:#0a0a12;">EM</div>
+            <div style="width:38px;height:38px;border-radius:50%;margin-left:-12px;background:linear-gradient(135deg,#c9dcff,#c9f0d8);border:2.5px solid var(--bg);display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk';font-weight:700;font-size:13px;color:#0a0a12;">LC</div>
+            <div style="width:38px;height:38px;border-radius:50%;margin-left:-12px;background:rgba(var(--fg),0.1);border:2.5px solid var(--bg);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:12px;color:var(--tx-2);">+9</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== INPUTS ===== -->
+      <section id="inputs" style="scroll-margin-top:80px;margin-bottom:44px;">
+        <div data-reveal style="font-family:'Space Grotesk';font-size:19px;font-weight:600;margin-bottom:4px;">Form inputs</div>
+        <div data-reveal style="font-size:13.5px;color:var(--tx-4);margin-bottom:20px;">Text fields, selects, and controls.</div>
+        <div data-reveal class="nx-2col" style="padding:26px;border-radius:16px;background:rgba(var(--fg),0.025);border:1px solid rgba(var(--fg),0.08);display:grid;grid-template-columns:1fr 1fr;gap:22px;">
+          <div style="display:flex;flex-direction:column;gap:16px;">
+            <div><label style="display:block;font-size:13px;color:var(--tx-3);margin-bottom:8px;">Email address</label><input placeholder="you@company.com" style="width:100%;padding:12px 14px;border-radius:10px;background:rgba(var(--fg),0.04);border:1px solid rgba(var(--fg),0.12);color:var(--tx-hi);font-size:14px;outline:none;" style-focus="border-color:rgba(var(--a1rgb),0.6);"></div>
+            <div><label style="display:block;font-size:13px;color:var(--tx-3);margin-bottom:8px;">With icon</label><div style="display:flex;align-items:center;gap:10px;background:rgba(var(--fg),0.04);border:1px solid rgba(var(--fg),0.12);border-radius:10px;padding:0 14px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--tx-4)" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input placeholder="Search…" style="flex:1;padding:12px 0;border:none;background:transparent;color:var(--tx-hi);font-size:14px;outline:none;"></div></div>
+            <div><label style="display:block;font-size:13px;color:var(--err);margin-bottom:8px;">Password (error)</label><input type="password" value="123" style="width:100%;padding:12px 14px;border-radius:10px;background:rgba(255,95,112,0.06);border:1px solid var(--err);color:var(--tx-hi);font-size:14px;outline:none;"><div style="font-size:12px;color:var(--err);margin-top:6px;">Must be at least 8 characters.</div></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:16px;">
+            <div><label style="display:block;font-size:13px;color:var(--tx-3);margin-bottom:8px;">Select</label><select style="width:100%;padding:12px 14px;border-radius:10px;background:rgba(var(--fg),0.04);border:1px solid rgba(var(--fg),0.12);color:var(--tx-hi);font-size:14px;outline:none;cursor:pointer;"><option>United States</option><option>Vietnam</option><option>Germany</option></select></div>
+            <div><label style="display:block;font-size:13px;color:var(--tx-3);margin-bottom:8px;">Message</label><textarea rows="3" placeholder="Write something…" style="width:100%;padding:12px 14px;border-radius:10px;background:rgba(var(--fg),0.04);border:1px solid rgba(var(--fg),0.12);color:var(--tx-hi);font-size:14px;outline:none;resize:vertical;font-family:'Sora',sans-serif;"></textarea></div>
+            <div><label style="display:block;font-size:13px;color:var(--tx-5);margin-bottom:8px;">Disabled</label><input disabled placeholder="Not editable" style="width:100%;padding:12px 14px;border-radius:10px;background:rgba(var(--fg),0.03);border:1px solid rgba(var(--fg),0.08);color:var(--tx-5);font-size:14px;cursor:not-allowed;"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== TOGGLES / CONTROLS ===== -->
+      <section id="controls" style="scroll-margin-top:80px;margin-bottom:44px;">
+        <div data-reveal style="font-family:'Space Grotesk';font-size:19px;font-weight:600;margin-bottom:4px;">Switches, checkboxes &amp; slider</div>
+        <div data-reveal style="font-size:13.5px;color:var(--tx-4);margin-bottom:20px;">Interactive — click them.</div>
+        <div data-reveal class="nx-2col" style="padding:26px;border-radius:16px;background:rgba(var(--fg),0.025);border:1px solid rgba(var(--fg),0.08);display:grid;grid-template-columns:1fr 1fr;gap:26px;">
+          <div style="display:flex;flex-direction:column;gap:16px;">
+            <sc-for list="{{ switches }}" as="sw" hint-placeholder-count="3">
+              <div onClick="{{ sw.toggle }}" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;">
+                <span style="font-size:14px;color:var(--tx-2);">{{ sw.label }}</span>
+                <span style="width:44px;height:26px;border-radius:100px;background:{{ sw.track }};position:relative;transition:background .2s;flex-shrink:0;"><span style="position:absolute;top:3px;left:{{ sw.knob }};width:20px;height:20px;border-radius:50%;background:#fff;transition:left .2s;box-shadow:0 2px 5px rgba(0,0,0,0.3);"></span></span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:18px;">
+            <div style="display:flex;flex-direction:column;gap:12px;">
+              <sc-for list="{{ checks }}" as="ck" hint-placeholder-count="3">
+                <div onClick="{{ ck.toggle }}" style="display:flex;align-items:center;gap:11px;cursor:pointer;">
+                  <span style="width:20px;height:20px;border-radius:6px;border:2px solid {{ ck.border }};background:{{ ck.bg }};display:flex;align-items:center;justify-content:center;flex-shrink:0;"><span data-html="{{ ck.tick }}" style="display:flex;color:#0a0a12;"></span></span>
+                  <span style="font-size:14px;color:var(--tx-2);">{{ ck.label }}</span>
+                </div>
+              </sc-for>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--tx-3);margin-bottom:10px;">Volume<span style="color:var(--a2);font-weight:600;">{{ slider }}%</span></div>
+              <input type="range" min="0" max="100" value="{{ slider }}" onInput="{{ onSlider }}" style="width:100%;accent-color:var(--a1);cursor:pointer;">
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== ALERTS ===== -->
+      <section id="alerts" style="scroll-margin-top:80px;margin-bottom:44px;">
+        <div data-reveal style="font-family:'Space Grotesk';font-size:19px;font-weight:600;margin-bottom:4px;">Alerts</div>
+        <div data-reveal style="font-size:13.5px;color:var(--tx-4);margin-bottom:20px;">Contextual feedback messages.</div>
+        <div data-reveal style="display:flex;flex-direction:column;gap:12px;">
+          <sc-for list="{{ alerts }}" as="al" hint-placeholder-count="4">
+            <div style="display:flex;gap:13px;padding:15px 18px;border-radius:12px;background:{{ al.bg }};border:1px solid {{ al.border }};">
+              <span data-html="{{ al.icon }}" style="display:flex;color:{{ al.color }};flex-shrink:0;margin-top:1px;"></span>
+              <div><div style="font-size:14px;font-weight:600;color:var(--tx-hi);margin-bottom:2px;">{{ al.title }}</div><div style="font-size:13.5px;line-height:1.55;color:var(--tx-3);">{{ al.body }}</div></div>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+
+      <!-- ===== TABS ===== -->
+      <section id="tabs" style="scroll-margin-top:80px;margin-bottom:44px;">
+        <div data-reveal style="font-family:'Space Grotesk';font-size:19px;font-weight:600;margin-bottom:4px;">Tabs</div>
+        <div data-reveal style="font-size:13.5px;color:var(--tx-4);margin-bottom:20px;">Interactive tab switcher.</div>
+        <div data-reveal style="padding:26px;border-radius:16px;background:rgba(var(--fg),0.025);border:1px solid rgba(var(--fg),0.08);">
+          <div style="display:flex;gap:4px;padding:4px;border-radius:11px;background:rgba(var(--fg),0.05);width:fit-content;margin-bottom:20px;">
+            <sc-for list="{{ tabItems }}" as="t" hint-placeholder-count="3">
+              <button onClick="{{ t.select }}" style="font-size:13.5px;font-weight:600;padding:8px 18px;border-radius:8px;border:none;cursor:pointer;background:{{ t.bg }};color:{{ t.color }};transition:all .2s;">{{ t.label }}</button>
+            </sc-for>
+          </div>
+          <div style="font-size:14px;line-height:1.65;color:var(--tx-3);">{{ tabBody }}</div>
+        </div>
+      </section>
+
+      <!-- ===== ACCORDION ===== -->
+      <section id="accordion" style="scroll-margin-top:80px;margin-bottom:44px;">
+        <div data-reveal style="font-family:'Space Grotesk';font-size:19px;font-weight:600;margin-bottom:4px;">Accordion</div>
+        <div data-reveal style="font-size:13.5px;color:var(--tx-4);margin-bottom:20px;">Expandable sections.</div>
+        <div data-reveal style="display:flex;flex-direction:column;gap:10px;">
+          <sc-for list="{{ accordion }}" as="ac" hint-placeholder-count="3">
+            <div style="border-radius:12px;background:rgba(var(--fg),0.025);border:1px solid rgba(var(--fg),0.08);overflow:hidden;">
+              <button onClick="{{ ac.toggle }}" style="width:100%;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 20px;background:none;border:none;cursor:pointer;text-align:left;font-size:14.5px;font-weight:600;color:var(--tx-hi);font-family:'Sora',sans-serif;">{{ ac.q }}<span style="flex-shrink:0;color:var(--a2);transform:{{ ac.rot }};transition:transform .25s;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></span></button>
+              <sc-if value="{{ ac.open }}" hint-placeholder-val="{{ false }}">
+                <div style="padding:0 20px 18px;font-size:13.5px;line-height:1.6;color:var(--tx-3);">{{ ac.a }}</div>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+
+      <!-- ===== TABLE ===== -->
+      <section id="table" style="scroll-margin-top:80px;margin-bottom:44px;">
+        <div data-reveal style="font-family:'Space Grotesk';font-size:19px;font-weight:600;margin-bottom:4px;">Data table</div>
+        <div data-reveal style="font-size:13.5px;color:var(--tx-4);margin-bottom:20px;">Rows with avatars and status.</div>
+        <div data-reveal style="border-radius:16px;background:rgba(var(--fg),0.025);border:1px solid rgba(var(--fg),0.08);overflow:hidden;">
+          <div style="display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:14px;padding:14px 22px;border-bottom:1px solid rgba(var(--fg),0.08);font-size:11.5px;font-weight:700;letter-spacing:0.06em;color:var(--tx-5);">
+            <div>NAME</div><div>ROLE</div><div>STATUS</div><div>ACTION</div>
+          </div>
+          <sc-for list="{{ rows }}" as="r" hint-placeholder-count="4">
+            <div style="display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:14px;padding:14px 22px;border-bottom:1px solid rgba(var(--fg),0.05);align-items:center;">
+              <div style="display:flex;align-items:center;gap:12px;"><div style="width:34px;height:34px;border-radius:50%;background:{{ r.color }};display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk';font-weight:700;font-size:12px;color:#0a0a12;flex-shrink:0;">{{ r.initials }}</div><div style="min-width:0;"><div style="font-size:13.5px;font-weight:600;color:var(--tx-hi);">{{ r.name }}</div><div style="font-size:12px;color:var(--tx-4);overflow:hidden;text-overflow:ellipsis;">{{ r.email }}</div></div></div>
+              <div style="font-size:13.5px;color:var(--tx-2);">{{ r.role }}</div>
+              <div><span style="font-size:11.5px;font-weight:600;color:{{ r.statusColor }};background:{{ r.statusBg }};padding:4px 10px;border-radius:100px;">{{ r.status }}</span></div>
+              <div style="color:var(--tx-4);cursor:pointer;display:flex;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="12" cy="19" r="1.4"/></svg></div>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+
+      <!-- ===== PROGRESS ===== -->
+      <section id="progress" style="scroll-margin-top:80px;margin-bottom:44px;">
+        <div data-reveal style="font-family:'Space Grotesk';font-size:19px;font-weight:600;margin-bottom:4px;">Progress &amp; loaders</div>
+        <div data-reveal style="font-size:13.5px;color:var(--tx-4);margin-bottom:20px;">Bars, rings, spinners and skeletons.</div>
+        <div data-reveal class="nx-2col" style="padding:26px;border-radius:16px;background:rgba(var(--fg),0.025);border:1px solid rgba(var(--fg),0.08);display:grid;grid-template-columns:1fr 1fr;gap:26px;align-items:center;">
+          <div style="display:flex;flex-direction:column;gap:18px;">
+            <div><div style="display:flex;justify-content:space-between;font-size:12.5px;color:var(--tx-3);margin-bottom:7px;">Uploading<span>72%</span></div><div style="height:8px;border-radius:100px;background:rgba(var(--fg),0.08);overflow:hidden;"><div style="width:72%;height:100%;border-radius:100px;background:linear-gradient(90deg,var(--a1),var(--a3));"></div></div></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:12.5px;color:var(--tx-3);margin-bottom:7px;">Storage<span>45%</span></div><div style="height:8px;border-radius:100px;background:rgba(var(--fg),0.08);overflow:hidden;"><div style="width:45%;height:100%;border-radius:100px;background:var(--warn);"></div></div></div>
+            <div style="display:flex;flex-direction:column;gap:10px;"><div style="height:12px;width:80%;border-radius:6px;background:linear-gradient(90deg,rgba(var(--fg),0.06),rgba(var(--fg),0.12),rgba(var(--fg),0.06));background-size:800px 100%;animation:nx-shimmer 1.4s linear infinite;"></div><div style="height:12px;width:60%;border-radius:6px;background:linear-gradient(90deg,rgba(var(--fg),0.06),rgba(var(--fg),0.12),rgba(var(--fg),0.06));background-size:800px 100%;animation:nx-shimmer 1.4s linear infinite;"></div><div style="height:12px;width:70%;border-radius:6px;background:linear-gradient(90deg,rgba(var(--fg),0.06),rgba(var(--fg),0.12),rgba(var(--fg),0.06));background-size:800px 100%;animation:nx-shimmer 1.4s linear infinite;"></div></div>
+          </div>
+          <div style="display:flex;gap:30px;align-items:center;justify-content:center;">
+            <div style="position:relative;width:78px;height:78px;"><svg width="78" height="78" viewBox="0 0 78 78"><circle cx="39" cy="39" r="33" fill="none" stroke="rgba(var(--fg),0.1)" stroke-width="8"/><circle cx="39" cy="39" r="33" fill="none" stroke="var(--a2)" stroke-width="8" stroke-linecap="round" stroke-dasharray="207" stroke-dashoffset="58" transform="rotate(-90 39 39)"/></svg><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk';font-weight:700;font-size:16px;">72%</div></div>
+            <div style="width:40px;height:40px;border-radius:50%;border:4px solid rgba(var(--fg),0.12);border-top-color:var(--a2);animation:nx-spin .8s linear infinite;"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== OVERLAYS: modal + dropdown + tooltip ===== -->
+      <section id="overlays" style="scroll-margin-top:80px;margin-bottom:44px;">
+        <div data-reveal style="font-family:'Space Grotesk';font-size:19px;font-weight:600;margin-bottom:4px;">Overlays</div>
+        <div data-reveal style="font-size:13.5px;color:var(--tx-4);margin-bottom:20px;">Modal, dropdown menu and tooltip — all interactive.</div>
+        <div data-reveal style="padding:26px;border-radius:16px;background:rgba(var(--fg),0.025);border:1px solid rgba(var(--fg),0.08);display:flex;flex-wrap:wrap;gap:14px;align-items:center;">
+          <button onClick="{{ openModal }}" style="font-size:14px;font-weight:600;color:#0a0a12;background:linear-gradient(135deg,var(--a2),var(--a3));border:none;padding:11px 20px;border-radius:10px;cursor:pointer;">Open modal</button>
+          <div style="position:relative;">
+            <button onClick="{{ toggleMenu }}" style="display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--tx-hi);background:rgba(var(--fg),0.06);border:1px solid rgba(var(--fg),0.16);padding:11px 18px;border-radius:10px;cursor:pointer;">Dropdown<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 9l6 6 6-6"/></svg></button>
+            <sc-if value="{{ menuOpen }}" hint-placeholder-val="{{ false }}">
+              <div style="position:absolute;top:calc(100% + 8px);left:0;z-index:20;min-width:180px;padding:6px;border-radius:12px;background:var(--bg-2);border:1px solid rgba(var(--fg),0.12);box-shadow:0 16px 40px rgba(0,0,0,0.3);">
+                <sc-for list="{{ menuItems }}" as="mi" hint-placeholder-count="4">
+                  <div class="nx-navlink" style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;font-size:13.5px;color:var(--tx-2);cursor:pointer;"><span data-html="{{ mi.icon }}" style="display:flex;color:var(--tx-4);"></span>{{ mi.label }}</div>
+                </sc-for>
+              </div>
+            </sc-if>
+          </div>
+          <div class="nx-tip" style="display:inline-flex;">
+            <button style="font-size:14px;font-weight:600;color:var(--tx-2);background:transparent;border:1px solid rgba(var(--fg),0.14);padding:11px 18px;border-radius:10px;cursor:default;">Hover me</button>
+            <span class="nx-tipbox" style="position:absolute;bottom:calc(100% + 9px);left:50%;white-space:nowrap;font-size:12.5px;font-weight:500;color:var(--bg);background:var(--tx-hi);padding:7px 12px;border-radius:8px;pointer-events:none;">Helpful tooltip ✦</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== NAVIGATION: breadcrumbs, pagination, steps ===== -->
+      <section id="navigation" style="scroll-margin-top:80px;margin-bottom:20px;">
+        <div data-reveal style="font-family:'Space Grotesk';font-size:19px;font-weight:600;margin-bottom:4px;">Navigation</div>
+        <div data-reveal style="font-size:13.5px;color:var(--tx-4);margin-bottom:20px;">Breadcrumbs, stepper and pagination.</div>
+        <div data-reveal style="padding:26px;border-radius:16px;background:rgba(var(--fg),0.025);border:1px solid rgba(var(--fg),0.08);display:flex;flex-direction:column;gap:26px;">
+          <div style="display:flex;align-items:center;gap:9px;font-size:13.5px;color:var(--tx-4);flex-wrap:wrap;">
+            <span style="color:var(--tx-3);cursor:pointer;">Dashboard</span><span>/</span><span style="color:var(--tx-3);cursor:pointer;">Projects</span><span>/</span><span style="color:var(--a2);font-weight:600;">Nexus UI Kit</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:0;flex-wrap:wrap;">
+            <sc-for list="{{ steps }}" as="st" hint-placeholder-count="4">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <span style="width:30px;height:30px;border-radius:50%;background:{{ st.bg }};border:2px solid {{ st.border }};color:{{ st.color }};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;font-family:'Space Grotesk';flex-shrink:0;">{{ st.n }}</span>
+                <span style="font-size:13.5px;font-weight:500;color:{{ st.label }};">{{ st.title }}</span>
+                <sc-if value="{{ st.line }}" hint-placeholder-val="{{ true }}"><span style="width:40px;height:2px;background:rgba(var(--fg),0.12);margin:0 12px;"></span></sc-if>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:flex;align-items:center;gap:7px;">
+            <span style="width:34px;height:34px;border-radius:9px;background:rgba(var(--fg),0.05);border:1px solid rgba(var(--fg),0.1);color:var(--tx-4);display:flex;align-items:center;justify-content:center;cursor:pointer;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6"/></svg></span>
+            <span style="min-width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--a2),var(--a3));color:#0a0a12;display:flex;align-items:center;justify-content:center;font-size:13.5px;font-weight:700;cursor:pointer;">1</span>
+            <span style="min-width:34px;height:34px;border-radius:9px;background:rgba(var(--fg),0.05);border:1px solid rgba(var(--fg),0.1);color:var(--tx-2);display:flex;align-items:center;justify-content:center;font-size:13.5px;font-weight:600;cursor:pointer;">2</span>
+            <span style="min-width:34px;height:34px;border-radius:9px;background:rgba(var(--fg),0.05);border:1px solid rgba(var(--fg),0.1);color:var(--tx-2);display:flex;align-items:center;justify-content:center;font-size:13.5px;font-weight:600;cursor:pointer;">3</span>
+            <span style="color:var(--tx-5);padding:0 4px;">…</span>
+            <span style="min-width:34px;height:34px;border-radius:9px;background:rgba(var(--fg),0.05);border:1px solid rgba(var(--fg),0.1);color:var(--tx-2);display:flex;align-items:center;justify-content:center;font-size:13.5px;font-weight:600;cursor:pointer;">12</span>
+            <span style="width:34px;height:34px;border-radius:9px;background:rgba(var(--fg),0.05);border:1px solid rgba(var(--fg),0.1);color:var(--tx-2);display:flex;align-items:center;justify-content:center;cursor:pointer;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 18l6-6-6-6"/></svg></span>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ===== MODAL ===== -->
+  <sc-if value="{{ modalOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeModal }}" style="position:fixed;inset:0;z-index:100;background:rgba(4,4,8,0.6);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:24px;">
+      <div onClick="{{ stop }}" style="width:100%;max-width:440px;border-radius:18px;background:var(--bg-2);border:1px solid rgba(var(--fg),0.12);box-shadow:0 30px 80px rgba(0,0,0,0.5);overflow:hidden;">
+        <div style="padding:26px 26px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;">
+          <div style="display:flex;gap:14px;">
+            <span style="width:44px;height:44px;border-radius:12px;background:rgba(var(--a1rgb),0.14);color:var(--a2);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l2.4 7.4H22l-6 4.4 2.3 7.2L12 16.6 5.7 21l2.3-7.2-6-4.4h7.6z"/></svg></span>
+            <div><div style="font-family:'Space Grotesk';font-size:18px;font-weight:600;">Upgrade to Pro</div><div style="font-size:13.5px;color:var(--tx-4);margin-top:2px;">Unlock every component &amp; template.</div></div>
+          </div>
+          <button onClick="{{ closeModal }}" style="background:rgba(var(--fg),0.06);border:none;color:var(--tx-3);width:30px;height:30px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+        </div>
+        <div style="padding:18px 26px 26px;font-size:14px;line-height:1.6;color:var(--tx-3);">Get unlimited access to all 34 screens, the full component library, lifetime updates and priority support — one payment.</div>
+        <div style="padding:18px 26px;background:rgba(var(--fg),0.03);border-top:1px solid rgba(var(--fg),0.07);display:flex;gap:12px;justify-content:flex-end;">
+          <button onClick="{{ closeModal }}" style="font-size:14px;font-weight:600;color:var(--tx-hi);background:rgba(var(--fg),0.06);border:1px solid rgba(var(--fg),0.14);padding:10px 18px;border-radius:10px;cursor:pointer;">Maybe later</button>
+          <button onClick="{{ closeModal }}" style="font-size:14px;font-weight:600;color:#0a0a12;background:linear-gradient(135deg,var(--a2),var(--a3));border:none;padding:10px 20px;border-radius:10px;cursor:pointer;">Upgrade now</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <footer style="border-top:1px solid rgba(var(--fg),0.08);padding:24px;text-align:center;font-size:13px;color:var(--tx-5);">Nexus UI Kit · Component library · v1.0.0</footer>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1240,&quot;height&quot;:900}}">
+class Component extends DCLogic {
+  _readPref(k, f) { try { return localStorage.getItem(k) || f; } catch(e){ return f; } }
+  theme = this._readPref('nx-theme', 'dark');
+  accent = this._readPref('nx-accent', 'violet');
+  state = { tab: 0, acc: 0, modalOpen: false, menuOpen: false, slider: 60, sw: [true, false, true], ck: [true, true, false] };
+
+  toggleTheme = () => { this.theme = this.theme === 'dark' ? 'light' : 'dark'; try { localStorage.setItem('nx-theme', this.theme); } catch(e){} this.forceUpdate(); };
+  setAccent = (a) => () => { this.accent = a; try { localStorage.setItem('nx-accent', a); } catch(e){} this.forceUpdate(); };
+
+  selectTab = (i) => () => this.setState({ tab: i });
+  toggleAcc = (i) => () => this.setState(s => ({ acc: s.acc === i ? -1 : i }));
+  openModal = () => this.setState({ modalOpen: true });
+  closeModal = () => this.setState({ modalOpen: false });
+  stop = (e) => { if (e && e.stopPropagation) e.stopPropagation(); };
+  toggleMenu = (e) => { this.stop(e); this.setState(s => ({ menuOpen: !s.menuOpen })); };
+  onSlider = (e) => { const v = +e.target.value; this.setState({ slider: v }); };
+  toggleSw = (i) => () => this.setState(s => { const sw = s.sw.slice(); sw[i] = !sw[i]; return { sw }; });
+  toggleCk = (i) => () => this.setState(s => { const ck = s.ck.slice(); ck[i] = !ck[i]; return { ck }; });
+
+  componentDidMount() { this._initHtmlObserver(); this._applyHtml(); this._initReveal(); document.addEventListener('click', this._closeMenu); }
+  componentDidUpdate() { this._applyHtml(); this._scanReveal(); }
+  componentWillUnmount() { try { window.removeEventListener('scroll', this._revealAll, true); document.removeEventListener('scroll', this._revealAll, true); document.removeEventListener('click', this._closeMenu); this._htmlObs && this._htmlObs.disconnect(); } catch(e){} }
+  _closeMenu = (e) => { if (this.state.menuOpen) this.setState({ menuOpen: false }); };
+
+  _applyHtml() { try { document.querySelectorAll('[data-html]').forEach(function(el){ var v = el.getAttribute('data-html') || ''; if (v && (el.__lastHtml !== v || el.childNodes.length === 0)) { el.innerHTML = v; el.__lastHtml = v; } }); } catch(e){} }
+  _initHtmlObserver() { var self = this; try { this._htmlObs = new MutationObserver(function(){ clearTimeout(self._ht); self._ht = setTimeout(function(){ self._applyHtml(); }, 40); }); this._htmlObs.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['data-html'] }); } catch(e){} }
+  _initReveal() {
+    var self = this;
+    this._revealAll = function(){ try { var vh = window.innerHeight || 800; document.querySelectorAll('[data-reveal]:not([data-show])').forEach(function(el){ var r = el.getBoundingClientRect(); if (r.top < vh * 0.94 && r.bottom > -60) el.setAttribute('data-show', ''); }); } catch(e){} };
+    this._revealAll();
+    window.addEventListener('scroll', this._revealAll, { passive: true, capture: true });
+    document.addEventListener('scroll', this._revealAll, { passive: true, capture: true });
+    [80, 250, 600, 1200].forEach(function(t){ setTimeout(self._revealAll, t); });
+    setTimeout(function(){ try { document.querySelectorAll('[data-reveal]:not([data-show])').forEach(function(el){ el.setAttribute('data-show', ''); }); } catch(_){} }, 8000);
+  }
+  _scanReveal() { if (this._revealAll) requestAnimationFrame(this._revealAll); }
+
+  ic(p, sz) { return '<svg width="' + (sz||18) + '" height="' + (sz||18) + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">' + p + '</svg>'; }
+
+  renderVals() {
+    const sun = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
+    const moon = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>';
+    const accentDefs = [
+      { key: 'violet', name: 'Violet', grad: 'linear-gradient(135deg,#a48bff,#22d3ee)' },
+      { key: 'emerald', name: 'Emerald', grad: 'linear-gradient(135deg,#34d399,#2dd4bf)' },
+      { key: 'orange', name: 'Orange', grad: 'linear-gradient(135deg,#fb923c,#f59e0b)' },
+    ];
+    const accentSwatches = accentDefs.map(a => ({ name: a.name, grad: a.grad, pick: this.setAccent(a.key), ring: this.accent === a.key ? 'var(--tx-hi)' : 'transparent' }));
+
+    const sections = [
+      ['Buttons', '#buttons'], ['Badges & chips', '#badges'], ['Avatars', '#avatars'], ['Form inputs', '#inputs'],
+      ['Switches & slider', '#controls'], ['Alerts', '#alerts'], ['Tabs', '#tabs'], ['Accordion', '#accordion'],
+      ['Data table', '#table'], ['Progress', '#progress'], ['Overlays', '#overlays'], ['Navigation', '#navigation'],
+    ].map(s => ({ label: s[0], href: s[1] }));
+
+    // switches
+    const switchLabels = ['Email notifications', 'Two-factor auth', 'Weekly digest'];
+    const switches = switchLabels.map((label, i) => { const on = this.state.sw[i]; return { label, toggle: this.toggleSw(i), track: on ? 'linear-gradient(135deg,var(--a1),var(--a3))' : 'rgba(var(--fg),0.16)', knob: on ? '21px' : '3px' }; });
+    // checkboxes
+    const tick = this.ic('<path d="M20 6L9 17l-5-5"/>', 13);
+    const checkLabels = ['Auto-save drafts', 'Show line numbers', 'Compact mode'];
+    const checks = checkLabels.map((label, i) => { const on = this.state.ck[i]; return { label, toggle: this.toggleCk(i), border: on ? 'transparent' : 'rgba(var(--fg),0.3)', bg: on ? 'var(--a2)' : 'transparent', tick: on ? tick : '' }; });
+
+    // alerts
+    const alerts = [
+      { title: 'Update available', body: 'Version 1.1 is ready to install with new components.', color: 'var(--a2)', bg: 'rgba(var(--a1rgb),0.08)', border: 'rgba(var(--a1rgb),0.3)', icon: this.ic('<circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>') },
+      { title: 'Payment received', body: 'Your Pro license is now active. Thank you!', color: 'var(--ok)', bg: 'rgba(34,197,94,0.08)', border: 'rgba(34,197,94,0.3)', icon: this.ic('<path d="M22 11.1V12a10 10 0 1 1-5.9-9.1"/><path d="M22 4 12 14.01l-3-3"/>') },
+      { title: 'Storage almost full', body: 'You have used 90% of your plan storage.', color: 'var(--warn)', bg: 'rgba(254,188,46,0.08)', border: 'rgba(254,188,46,0.3)', icon: this.ic('<path d="M10.3 3.2 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.2a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/>') },
+      { title: 'Connection lost', body: 'We could not reach the server. Retrying…', color: 'var(--err)', bg: 'rgba(255,95,112,0.08)', border: 'rgba(255,95,112,0.3)', icon: this.ic('<circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/>') },
+    ];
+
+    // tabs
+    const tabDefs = [
+      { label: 'Overview', body: 'A quick summary of everything in this workspace — active projects, recent activity and key metrics at a glance.' },
+      { label: 'Activity', body: 'A chronological feed of what changed: commits, comments, status updates and member actions across the team.' },
+      { label: 'Settings', body: 'Configure workspace preferences, member permissions, integrations and billing from one place.' },
+    ];
+    const tabItems = tabDefs.map((t, i) => { const on = this.state.tab === i; return { label: t.label, select: this.selectTab(i), bg: on ? 'var(--bg-2)' : 'transparent', color: on ? 'var(--tx-hi)' : 'var(--tx-4)' }; });
+    const tabBody = (tabDefs[this.state.tab] || tabDefs[0]).body;
+
+    // accordion
+    const accDefs = [
+      { q: 'How do I change the accent color?', a: 'Use the swatches in the bottom-left control, or edit the --a1 / --a2 / --a3 variables in the #nx-root style block to define your own.' },
+      { q: 'Does it work without a build step?', a: 'Yes — every screen is plain HTML. Open the file directly or drop the folder on any static host.' },
+      { q: 'Is dark mode included on all pages?', a: 'Every screen ships with synced light and dark themes driven by one CSS variable system.' },
+    ];
+    const accordion = accDefs.map((a, i) => { const open = this.state.acc === i; return { q: a.q, a: a.a, open, toggle: this.toggleAcc(i), rot: open ? 'rotate(180deg)' : 'rotate(0deg)' }; });
+
+    // table
+    const pc = ['linear-gradient(135deg,#c9beff,#a5edf7)', 'linear-gradient(135deg,#ffd9c9,#c9beff)', 'linear-gradient(135deg,#a5edf7,#c9f0d8)', 'linear-gradient(135deg,#ffd6cc,#ffd9c9)'];
+    const st3 = [ { s: 'Active', bg: 'rgba(34,197,94,0.14)', c: 'var(--ok)' }, { s: 'Pending', bg: 'rgba(254,188,46,0.14)', c: 'var(--warn)' }, { s: 'Inactive', bg: 'rgba(255,95,112,0.14)', c: 'var(--err)' } ];
+    const rows = [
+      ['Jordan Diaz', 'jordan@nexus.io', 'Admin', 0], ['Sara Malik', 'sara@nexus.io', 'Editor', 1],
+      ['Tom Wright', 'tom@nexus.io', 'Viewer', 0], ['Aisha Lee', 'aisha@nexus.io', 'Developer', 2],
+    ].map((r, i) => { const p = r[0].split(' '); const s = st3[r[3]]; return { name: r[0], email: r[1], role: r[2], initials: p[0][0] + p[1][0], color: pc[i % pc.length], status: s.s, statusBg: s.bg, statusColor: s.c }; });
+
+    // menu
+    const menuItems = [
+      { label: 'Edit', icon: this.ic('<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4z"/>', 15) },
+      { label: 'Duplicate', icon: this.ic('<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>', 15) },
+      { label: 'Share', icon: this.ic('<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/>', 15) },
+      { label: 'Delete', icon: this.ic('<path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>', 15) },
+    ];
+
+    // steps
+    const stepDefs = ['Account', 'Workspace', 'Invite', 'Done'];
+    const active = 1;
+    const steps = stepDefs.map((title, i) => {
+      const done = i < active, cur = i === active;
+      return { n: done ? '✓' : (i + 1), title, line: i < stepDefs.length - 1,
+        bg: (done || cur) ? 'linear-gradient(135deg,var(--a1),var(--a3))' : 'rgba(var(--fg),0.05)',
+        border: (done || cur) ? 'transparent' : 'rgba(var(--fg),0.15)',
+        color: (done || cur) ? '#0a0a12' : 'var(--tx-4)',
+        label: (done || cur) ? 'var(--tx-hi)' : 'var(--tx-4)' };
+    });
+
+    return {
+      theme: this.theme, accent: this.accent, toggleTheme: this.toggleTheme,
+      themeIcon: this.theme === 'dark' ? sun : moon, themeLabel: this.theme === 'dark' ? 'Light' : 'Dark',
+      accentSwatches, sections,
+      switches, checks, slider: this.state.slider, onSlider: this.onSlider,
+      alerts, tabItems, tabBody, accordion, rows,
+      modalOpen: this.state.modalOpen, openModal: this.openModal, closeModal: this.closeModal, stop: this.stop,
+      menuOpen: this.state.menuOpen, toggleMenu: this.toggleMenu, menuItems, steps,
+    };
+  }
+}
+
+</script>
+</body>
+</html>

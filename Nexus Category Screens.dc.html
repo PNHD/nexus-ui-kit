@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Sora:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #050509; }
+</style>
+</helmet>
+
+<div style="width:1200px;position:relative;overflow:hidden;background:linear-gradient(180deg,#0b0b14,#08080e);font-family:'Sora',sans-serif;color:#f4f4f7;">
+
+  <!-- glow -->
+  <div style="position:absolute;top:-180px;left:50%;transform:translateX(-50%);width:900px;height:700px;background:radial-gradient(circle,rgba(124,92,255,0.2),transparent 62%);filter:blur(20px);pointer-events:none;"></div>
+
+  <div style="position:relative;padding:56px 40px 72px;">
+
+    <!-- header -->
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="display:inline-flex;align-items:center;gap:11px;margin-bottom:22px;">
+        <span style="width:40px;height:40px;border-radius:11px;background:linear-gradient(135deg,#7c5cff,#22d3ee);display:flex;align-items:center;justify-content:center;font-weight:700;font-family:'Space Grotesk';font-size:20px;color:#0a0a12;box-shadow:0 8px 24px rgba(124,92,255,0.5);">N</span>
+        <span style="font-family:'Space Grotesk';font-weight:600;font-size:20px;letter-spacing:-0.02em;">Nexus <span style="color:#8b8b9c;font-weight:500;">UI Kit</span></span>
+      </div>
+      <h1 style="font-family:'Space Grotesk';font-weight:700;font-size:52px;line-height:1.03;letter-spacing:-0.035em;margin-bottom:16px;">Every surface, <span style="background:linear-gradient(120deg,#a48bff,#22d3ee);-webkit-background-clip:text;background-clip:text;color:transparent;">up close.</span></h1>
+      <p style="font-size:18px;color:#9a9aab;max-width:600px;margin:0 auto;line-height:1.55;">Five product surfaces in one kit. Every screenshot below is the real page, running live — nothing is faked.</p>
+    </div>
+
+    <!-- category rows -->
+    <sc-for list="{{ cats }}" as="c" hint-placeholder-count="5">
+      <div style="margin-top:72px;">
+        <!-- caption -->
+        <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:22px;">
+          <div style="display:flex;align-items:center;gap:18px;">
+            <span style="font-family:'Space Grotesk';font-weight:700;font-size:44px;letter-spacing:-0.03em;color:rgba(255,255,255,0.14);">{{ c.num }}</span>
+            <div>
+              <div style="display:flex;align-items:center;gap:11px;margin-bottom:6px;">
+                <h2 style="font-family:'Space Grotesk';font-weight:600;font-size:26px;letter-spacing:-0.02em;">{{ c.title }}</h2>
+                <span style="font-size:12px;font-weight:600;color:#a48bff;background:rgba(124,92,255,0.14);padding:4px 11px;border-radius:100px;">{{ c.badge }}</span>
+              </div>
+              <p style="font-size:15px;color:#9a9aab;line-height:1.5;max-width:640px;">{{ c.desc }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- browser frame -->
+        <div style="border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,0.1);background:#0d0d14;box-shadow:0 40px 80px rgba(0,0,0,0.5);">
+          <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;background:#141420;border-bottom:1px solid rgba(255,255,255,0.06);">
+            <span style="width:12px;height:12px;border-radius:50%;background:#ff5f57;"></span>
+            <span style="width:12px;height:12px;border-radius:50%;background:#febc2e;"></span>
+            <span style="width:12px;height:12px;border-radius:50%;background:#28c840;"></span>
+            <div style="flex:1;margin:0 14px;text-align:center;font-family:'JetBrains Mono';font-size:12px;color:#6f6f80;background:rgba(255,255,255,0.05);border-radius:7px;padding:6px 12px;">{{ c.url }}</div>
+          </div>
+          <div style="width:1120px;height:600px;overflow:hidden;">
+            <iframe src="{{ c.href }}" title="{{ c.title }}" scrolling="no" style="width:1600px;height:857px;border:0;transform:scale(0.7);transform-origin:top left;pointer-events:none;"></iframe>
+          </div>
+        </div>
+      </div>
+    </sc-for>
+
+    <!-- footer -->
+    <div style="text-align:center;margin-top:80px;padding-top:34px;border-top:1px solid rgba(255,255,255,0.08);font-size:14px;color:#6f6f80;">
+      Nexus UI Kit · 34 pages · light &amp; dark · 3 accents · v1.0.0
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1200,&quot;height&quot;:900}}">
+class Component extends DCLogic {
+  renderVals() {
+    const cats = [
+      { num: '01', title: 'Admin Dashboard', badge: '28 pages', url: 'nexus-ui.kit/admin', href: 'Nexus Admin Dashboard.dc.html', desc: 'Analytics, tables, forms, auth, settings & billing — a full back-office suite with six themed chart types.' },
+      { num: '02', title: 'SaaS Landing', badge: '6 pages', url: 'nexus-ui.kit/home', href: 'Nexus AI SaaS Landing.dc.html', desc: 'A conversion-ready marketing site: hero, pricing, features, blog and more, with scroll-reveal animation.' },
+      { num: '03', title: 'Components Gallery', badge: '40+ blocks', url: 'nexus-ui.kit/components', href: 'Nexus Components Gallery.dc.html', desc: 'Buttons, forms, tables, overlays, navigation — every element used across the kit, ready to copy and paste.' },
+      { num: '04', title: 'Documentation', badge: 'Full guide', url: 'nexus-ui.kit/docs', href: 'Nexus Documentation.dc.html', desc: 'Install, theming, customization, charts and FAQ, wired to a scroll-spy sidebar. No build step to explain.' },
+      { num: '05', title: 'Mobile Views', badge: 'Responsive', url: 'nexus-ui.kit/mobile', href: 'Nexus Mobile Views.dc.html', desc: 'Key screens shown live inside phone frames — proof the same HTML reflows cleanly from desktop to pocket.' },
+    ];
+    return { cats };
+  }
+}
+</script>
+</body>
+</html>
